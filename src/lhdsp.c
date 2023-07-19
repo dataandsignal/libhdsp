@@ -38,6 +38,12 @@
 #include "config.h"
 #include "lhdsp.h"
 
-void lhdsp_init(void) {
-    printf("Hi\n");
+hdsp_status_t hdsp_upsample(int16_t *x, size_t x_len, int upsample_factor, int16_t *y, size_t *y_len)
+{
+    return HDSP_STATUS_OK;
+}
+
+hdsp_status_t hdsp_filter(int16_t *x, size_t x_len, hdsp_filter_t *fltr, int16_t *y, size_t *y_len)
+{
+    return HDSP_STATUS_OK;
 }
