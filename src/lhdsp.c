@@ -40,6 +40,7 @@
 
 hdsp_status_t hdsp_upsample(int16_t *x, size_t x_len, int upsample_factor, int16_t *y, size_t *y_len)
 {
+    
     return HDSP_STATUS_OK;
 }
 
