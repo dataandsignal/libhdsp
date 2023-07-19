@@ -80,6 +80,9 @@ typedef struct hdsp_filter hdsp_filter_t;
  */
 hdsp_status_t hdsp_upsample(int16_t *x, size_t x_len, int upsample_factor, int16_t *y, size_t *y_len);
 
+/**
+ * Filter frame x with filter.
+ */
 hdsp_status_t hdsp_filter(int16_t *x, size_t x_len, hdsp_filter_t *fltr, int16_t *y, size_t *y_len);
 
 #ifdef __cplusplus
