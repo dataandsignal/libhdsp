@@ -56,11 +56,31 @@ extern "C" {
 #define LHDSP_VER_STRING PACKAGE_STRING
 #define LHDSP_VERSION PACKAGE_VERSION
 
+enum hdsp_status {
+    HDSP_STATUS_OK,
+    HDSP_STATUS_FALSE
+};
+typedef enum hdsp_status hdsp_status_t;
+
+struct hdsp_filter {
+    int16_t *a;
+    int16_t *b;
+    size_t a_len;
+    size_t b_len;
+};
+typedef struct hdsp_filter hdsp_filter_t;
 
 /**
- * Says hi.
+ * Upsample by zero insertion.
+ *      x - (in) input frame
+ *      x_len - (in) input frame length in samples
+ *      upsample_factor - (in) upsampling factor equal to ratio of output frequency to input frequency (Fy / Fx)
+ *      y - (out) upsampled frame
+ *      y_len - (out) upsampled frame's length in samples
  */
-void lhdsp_init(void);
+hdsp_status_t hdsp_upsample(int16_t *x, size_t x_len, int upsample_factor, int16_t *y, size_t *y_len);
+
+hdsp_status_t hdsp_filter(int16_t *x, size_t x_len, hdsp_filter_t *fltr, int16_t *y, size_t *y_len);
 
 #ifdef __cplusplus
 }
