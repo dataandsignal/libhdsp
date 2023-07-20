@@ -7,9 +7,11 @@ libhdsp_la_SOURCES = src/hdsp.c
 include_HEADERS = include/hdsp.h
 libhdsp_la_LDFLAGS = -version-info 1:0:0
 
+#LIBS += -lhdsp
+
 bin_PROGRAMS = lhdsptool
 lhdsptool_SOURCES = test/hdsptool.c
-lhdsptool_LDADD = -lhdsp
+lhdsptool_LDADD = libhdsp.la
 
 check_PROGRAMS = test1
 TESTS = $(check_PROGRAMS)
