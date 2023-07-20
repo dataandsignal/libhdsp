@@ -14,3 +14,6 @@ lhdsptool_LDADD = -lhdsp
 check_PROGRAMS = test1
 TESTS = $(check_PROGRAMS)
 
+test1_SOURCES = test/test1.c src/hdsp.c include/hdsp.h
+test1_CFLAGS = -Iinclude
+
