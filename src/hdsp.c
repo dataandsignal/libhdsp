@@ -74,3 +74,9 @@ hdsp_status_t hdsp_filter(int16_t *x, size_t x_len, hdsp_filter_t *fltr, int16_t
 {
     return HDSP_STATUS_OK;
 }
+
+void hdsp_die(const char *file, int line, const char *reason)
+{
+    fprintf(stderr, "Failure: %s:%d %s\n", file, line, reason);
+    exit(EXIT_FAILURE);
+}

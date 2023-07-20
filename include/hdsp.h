@@ -53,6 +53,11 @@ extern "C" {
 #include <math.h>
 #include <float.h>
 
+void hdsp_die(const char *file, int line, const char *s);
+#define hdsp_test(x, m) if (!(x)) hdsp_die(__FILE__, __LINE__, m);
+#define hdsp_min(x, y) ((x) < (y) ? (x) : (y))
+#define hdsp_max(x, y) ((x) < (y) ? (y) : (x))
+
 enum hdsp_status {
     HDSP_STATUS_OK,
     HDSP_STATUS_FALSE

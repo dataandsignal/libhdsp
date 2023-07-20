@@ -38,6 +38,38 @@
 #include "hdsp.h"
 
 int main(int argc, char **argv) {
-    printf("It worked\n");
+#define Fs_x 8000
+#define f_x 200
+#define Fs_y 48000
+#define FRAME_LEN_MS 20
+#define X_LEN_SAMPLES (FRAME_LEN_MS * Fs_x / 1000)
+#define Y_LEN_SAMPLES (FRAME_LEN_MS * Fs_y / 1000)
+#define UPSAMPLE_FACTOR (Fs_y / Fs_x)
+    int16_t x[X_LEN_SAMPLES];
+    int16_t y[Y_LEN_SAMPLES];
+
+    int i = 0;
+    while (i < X_LEN_SAMPLES) {
+        x[i] = 100 * sin((double)i * 2 * M_PI * f_x / Fs_x);
+        printf("%d\n",x[i]);
+        i = i + 1;
+    }
+
+    hdsp_test(HDSP_STATUS_OK == hdsp_upsample(x, X_LEN_SAMPLES, UPSAMPLE_FACTOR, y, Y_LEN_SAMPLES), "It did not work\n");
+
+    i = 0;
+    while (i < X_LEN_SAMPLES)
+    {
+        int j = 0;
+        while (j < UPSAMPLE_FACTOR) {
+            if (j == 0) {
+                hdsp_test(y[UPSAMPLE_FACTOR * i + j] == x[i], "Wrong sample");
+            } else {
+                hdsp_test(y[UPSAMPLE_FACTOR * i + j] == 0, "Wrong zero");
+            }
+            j = j + 1;
+        }
+        i = i + 1;
+    }
     return 0;
 }
