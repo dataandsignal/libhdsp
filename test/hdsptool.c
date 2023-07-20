@@ -35,7 +35,7 @@
  */
 
 
-#include "lhdsp.h"
+#include "hdsp.h"
 
 int main(int args, char **argv) {
     printf("Hi\n");
