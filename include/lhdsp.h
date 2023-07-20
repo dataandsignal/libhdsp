@@ -53,9 +53,6 @@ extern "C" {
 #include <math.h>
 #include <float.h>
 
-#define LHDSP_VER_STRING PACKAGE_STRING
-#define LHDSP_VERSION PACKAGE_VERSION
-
 enum hdsp_status {
     HDSP_STATUS_OK,
     HDSP_STATUS_FALSE
@@ -75,10 +72,10 @@ typedef struct hdsp_filter hdsp_filter_t;
  *      x - (in) input frame
  *      x_len - (in) input frame length in samples
  *      upsample_factor - (in) upsampling factor equal to ratio of output frequency to input frequency (Fy / Fx)
- *      y - (out) upsampled frame
- *      y_len - (out) upsampled frame's length in samples
+ *      y - (in/out) upsampled frame, memory should be pre-allocated
+ *      y_len - (in) upsampled frame's length in samples, should be x_len*upsample_factor
  */
-hdsp_status_t hdsp_upsample(int16_t *x, size_t x_len, int upsample_factor, int16_t *y, size_t *y_len);
+hdsp_status_t hdsp_upsample(int16_t *x, size_t x_len, int upsample_factor, int16_t *y, size_t y_len);
 
 /**
  * Filter frame x with filter.

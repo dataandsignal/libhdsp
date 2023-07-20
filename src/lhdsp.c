@@ -35,22 +35,38 @@
  */
 
 
-#include "config.h"
 #include "lhdsp.h"
 
-hdsp_status_t hdsp_upsample(int16_t *x, size_t x_len, int upsample_factor, int16_t *y, size_t *y_len)
+hdsp_status_t hdsp_upsample(int16_t *x, size_t x_len, int upsample_factor, int16_t *y, size_t y_len)
 {
-    if (!x || x_len < 1 || upsample_factor < 1 || !y_len) {
+    if (!x || x_len < 1 || upsample_factor < 1 || !y || y_len < 1) {
+        return HDSP_STATUS_FALSE;
+    }
+
+    if (x_len * upsample_factor != y_len) {
         return HDSP_STATUS_FALSE;
     }
 
     if (upsample_factor == 1) {
-        *y_len = x_len;
-        y = malloc(x_len);
         memcpy(y, x, x_len * sizeof(int16_t));
         return HDSP_STATUS_OK;
     }
-    
+
+    size_t i = 0;
+    while (i < x_len)
+    {
+        size_t j = 0;
+        while (j < upsample_factor) {
+            if (j == 0) {
+                y[upsampleFactor * i + j] = x[i];
+            } else {
+                y[upsampleFactor * i + j] = 0;
+            }
+            j = j + 1;
+        }
+        i = i + 1;
+    }
+
     return HDSP_STATUS_OK;
 }
 
