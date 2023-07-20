@@ -35,7 +35,7 @@
  */
 
 
-#include "lhdsp.h"
+#include "hdsp.h"
 
 hdsp_status_t hdsp_upsample(int16_t *x, size_t x_len, int upsample_factor, int16_t *y, size_t y_len)
 {
@@ -58,9 +58,9 @@ hdsp_status_t hdsp_upsample(int16_t *x, size_t x_len, int upsample_factor, int16
         size_t j = 0;
         while (j < upsample_factor) {
             if (j == 0) {
-                y[upsampleFactor * i + j] = x[i];
+                y[upsample_factor * i + j] = x[i];
             } else {
-                y[upsampleFactor * i + j] = 0;
+                y[upsample_factor * i + j] = 0;
             }
             j = j + 1;
         }
