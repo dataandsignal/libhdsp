@@ -18,4 +18,5 @@ TESTS = $(check_PROGRAMS)
 
 test1_SOURCES = test/test1.c src/hdsp.c include/hdsp.h
 test1_CFLAGS = -Iinclude
+test1_LDADD = libhdsp.la
 
