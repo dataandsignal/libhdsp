@@ -1,5 +1,5 @@
 /*
- * This file is part of libhdsp - Handy DSP routines library.
+ * This file is part of libhdsp - Handy DSP routines library
  *
  * Copyright (c) 2023 Data And Signal - IT Solutions
  * All rights reserved.
@@ -38,15 +38,17 @@
 #include "hdsp.h"
 
 int main(int argc, char **argv) {
-#define Fs_x 8000
-#define f_x 200
-#define Fs_y 48000
-#define FRAME_LEN_MS 20
-#define X_LEN_SAMPLES (FRAME_LEN_MS * Fs_x / 1000)
-#define Y_LEN_SAMPLES (FRAME_LEN_MS * Fs_y / 1000)
-#define UPSAMPLE_FACTOR (Fs_y / Fs_x)
-    int16_t x[X_LEN_SAMPLES];
-    int16_t y[Y_LEN_SAMPLES];
+
+    #define Fs_x 8000
+    #define f_x 200
+    #define Fs_y 48000
+    #define FRAME_LEN_MS 20
+    #define X_LEN_SAMPLES (FRAME_LEN_MS * Fs_x / 1000)
+    #define Y_LEN_SAMPLES (FRAME_LEN_MS * Fs_y / 1000)
+    #define UPSAMPLE_FACTOR (Fs_y / Fs_x)
+
+    int16_t x[X_LEN_SAMPLES] = {0};
+    int16_t y[Y_LEN_SAMPLES] = {0};
 
     int i = 0;
     while (i < X_LEN_SAMPLES) {

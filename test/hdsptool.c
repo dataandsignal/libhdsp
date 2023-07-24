@@ -1,5 +1,5 @@
 /*
- * This file is part of libhdsp - Handy DSP routines library.
+ * This file is part of libhdsp - Handy DSP routines library
  *
  * Copyright (c) 2023 Data And Signal - IT Solutions
  * All rights reserved.

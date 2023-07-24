@@ -1,5 +1,5 @@
 /*
- * This file is part of libhdsp - Handy DSP routines library.
+ * This file is part of libhdsp - Handy DSP routines library
  *
  * Copyright (c) 2023 Data And Signal - IT Solutions
  * All rights reserved.
@@ -37,39 +37,25 @@
 
 #include "hdsp.h"
 
+#define output_vector_with_newline(v, v_len) \
+    for (int i = 0; i < v_len; i++) {fprintf(stderr, "[%d]:%d\n",i,x[i]);}
+#define output_vector_with_tab(v, v_len) \
+    for (int i = 0; i < v_len; i++) {fprintf(stderr, "[%d]:%d\t",i,x[i]);if(i + 1 == v_len){fprintf(stderr,"\n");}}
+
 int main(int argc, char **argv) {
-#define Fs_x 8000
-#define f_x 200
-#define Fs_y 48000
-#define FRAME_LEN_MS 20
-#define X_LEN_SAMPLES (FRAME_LEN_MS * Fs_x / 1000)
-#define Y_LEN_SAMPLES (FRAME_LEN_MS * Fs_y / 1000)
-#define UPSAMPLE_FACTOR (Fs_y / Fs_x)
-    int16_t x[X_LEN_SAMPLES];
-    int16_t y[Y_LEN_SAMPLES];
 
-    int i = 0;
-    while (i < X_LEN_SAMPLES) {
-        x[i] = 100 * sin((double)i * 2 * M_PI * f_x / Fs_x);
-        printf("%d\n",x[i]);
-        i = i + 1;
-    }
+    #define X_LEN 8
+    #define H_LEN 3
 
-    hdsp_test(HDSP_STATUS_OK == hdsp_upsample(x, X_LEN_SAMPLES, UPSAMPLE_FACTOR, y, Y_LEN_SAMPLES), "It did not work\n");
+    int16_t x[X_LEN] = {0, 1, 2, 3, 4, 5, 6, 7};
+    int16_t h[H_LEN] = {0, 1, 2};
+    int16_t y[X_LEN + H_LEN - 1] = {0};
 
-    i = 0;
-    while (i < X_LEN_SAMPLES)
-    {
-        int j = 0;
-        while (j < UPSAMPLE_FACTOR) {
-            if (j == 0) {
-                hdsp_test(y[UPSAMPLE_FACTOR * i + j] == x[i], "Wrong sample");
-            } else {
-                hdsp_test(y[UPSAMPLE_FACTOR * i + j] == 0, "Wrong zero");
-            }
-            j = j + 1;
-        }
-        i = i + 1;
-    }
+    fprintf(stderr, "x:\n");
+    output_vector_with_newline(x,X_LEN);
+    fprintf(stderr, "h:\n");
+    output_vector_with_newline(h,H_LEN);
+
+    hdsp_test(X_LEN + H_LEN - 1 == hdsp_conv(x, X_LEN, h, H_LEN, y), "It did not work\n");
     return 0;
 }
