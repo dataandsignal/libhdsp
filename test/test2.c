@@ -1,5 +1,5 @@
 /*
- * This file is part of libhdsp - Handy DSP routines library
+ * This file is part of libhdsp - Handy DSP routines library.
  *
  * Copyright (c) 2023 Data And Signal - IT Solutions
  * All rights reserved.
@@ -37,70 +37,39 @@
 
 #include "hdsp.h"
 
-hdsp_status_t hdsp_upsample(int16_t *x, size_t x_len, int upsample_factor, int16_t *y, size_t y_len)
-{
-    if (!x || x_len < 1 || upsample_factor < 1 || !y || y_len < 1) {
-        return HDSP_STATUS_FALSE;
+int main(int argc, char **argv) {
+#define Fs_x 8000
+#define f_x 200
+#define Fs_y 48000
+#define FRAME_LEN_MS 20
+#define X_LEN_SAMPLES (FRAME_LEN_MS * Fs_x / 1000)
+#define Y_LEN_SAMPLES (FRAME_LEN_MS * Fs_y / 1000)
+#define UPSAMPLE_FACTOR (Fs_y / Fs_x)
+    int16_t x[X_LEN_SAMPLES];
+    int16_t y[Y_LEN_SAMPLES];
+
+    int i = 0;
+    while (i < X_LEN_SAMPLES) {
+        x[i] = 100 * sin((double)i * 2 * M_PI * f_x / Fs_x);
+        printf("%d\n",x[i]);
+        i = i + 1;
     }
 
-    if (x_len * upsample_factor != y_len) {
-        return HDSP_STATUS_FALSE;
-    }
+    hdsp_test(HDSP_STATUS_OK == hdsp_upsample(x, X_LEN_SAMPLES, UPSAMPLE_FACTOR, y, Y_LEN_SAMPLES), "It did not work\n");
 
-    if (upsample_factor == 1) {
-        memcpy(y, x, x_len * sizeof(int16_t));
-        return HDSP_STATUS_OK;
-    }
-
-    size_t i = 0;
-    while (i < x_len)
+    i = 0;
+    while (i < X_LEN_SAMPLES)
     {
-        size_t j = 0;
-        while (j < upsample_factor) {
+        int j = 0;
+        while (j < UPSAMPLE_FACTOR) {
             if (j == 0) {
-                y[upsample_factor * i + j] = x[i];
+                hdsp_test(y[UPSAMPLE_FACTOR * i + j] == x[i], "Wrong sample");
             } else {
-                y[upsample_factor * i + j] = 0;
+                hdsp_test(y[UPSAMPLE_FACTOR * i + j] == 0, "Wrong zero");
             }
             j = j + 1;
         }
         i = i + 1;
     }
-
-    return HDSP_STATUS_OK;
-}
-
-uint16_t hdsp_conv(double *x, uint16_t x_len, double *h, uint16_t h_len, double *y)
-{
-    uint16_t t = 0, tau = 0;
-    uint16_t c_len = x_len + h_len - 1;
-    uint16_t tau_min = 0, tau_max = 0;
-
-    while (t < c_len) {
-
-        y[t] = 0;
-
-        tau_min = (t >= h_len - 1) ? t - (h_len - 1) : 0;
-        tau_max = (t < h_len - 1) ? hdsp_min(x_len - 1, t) : hdsp_min(x_len - 1, h_len - 1);
-
-        for (tau = tau_min; tau <= tau_max; tau++) {
-
-            y[t] += x[tau] * h[t - tau];
-        }
-
-        t++;
-    }
-
-    return t;
-}
-
-hdsp_status_t hdsp_filter(int16_t *x, size_t x_len, hdsp_filter_t *fltr, int16_t *y, size_t *y_len)
-{
-    return HDSP_STATUS_OK;
-}
-
-void hdsp_die(const char *file, int line, const char *reason)
-{
-    fprintf(stderr, "Failure: %s:%d %s\n", file, line, reason);
-    exit(EXIT_FAILURE);
+    return 0;
 }
