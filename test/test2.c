@@ -38,9 +38,9 @@
 #include "hdsp.h"
 
 #define output_vector_with_newline(v, v_len) \
-    for (int i = 0; i < v_len; i++) {fprintf(stderr, "[%d]:%d\n",i,x[i]);}
+    for (int i = 0; i < v_len; i++) {fprintf(stderr, "[%d]:%d\n",i,v[i]);}
 #define output_vector_with_tab(v, v_len) \
-    for (int i = 0; i < v_len; i++) {fprintf(stderr, "[%d]:%d\t",i,x[i]);if(i + 1 == v_len){fprintf(stderr,"\n");}}
+    for (int i = 0; i < v_len; i++) {fprintf(stderr, "[%d]:%d\t",i,v[i]);if(i + 1 == v_len){fprintf(stderr,"\n");}}
 
 int main(int argc, char **argv) {
 
@@ -57,5 +57,7 @@ int main(int argc, char **argv) {
     output_vector_with_newline(h,H_LEN);
 
     hdsp_test(X_LEN + H_LEN - 1 == hdsp_conv(x, X_LEN, h, H_LEN, y), "It did not work\n");
+    fprintf(stderr, "y:\n");
+    output_vector_with_newline(y, X_LEN + H_LEN - 1);
     return 0;
 }

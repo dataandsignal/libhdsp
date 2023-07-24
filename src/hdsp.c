@@ -72,19 +72,22 @@ hdsp_status_t hdsp_upsample(int16_t *x, size_t x_len, int upsample_factor, int16
 
 uint16_t hdsp_conv(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, int16_t *y)
 {
-    uint16_t t = 0, tau = 0;
-    uint16_t c_len = x_len + h_len - 1;
-    uint16_t tau_min = 0, tau_max = 0;
+    int16_t t = 0, tau = 0;
+    int16_t c_len = x_len + h_len - 1;
+    int16_t tau_min = 0, tau_max = 0;
 
     while (t < c_len) {
 
         y[t] = 0;
 
-        tau_min = (t >= h_len - 1) ? t - (h_len - 1) : 0;
-        tau_max = (t < h_len - 1) ? hdsp_min(x_len - 1, t) : hdsp_min(x_len - 1, h_len - 1);
+        tau_min = (t < h_len - 1) ? 0 : t - (h_len - 1);
+        tau_max = (t < h_len - 1) ? hdsp_min(x_len - 1, (h_len - 1) - t) : t;
+        tau_min = hdsp_max(tau_min, t - (h_len - 1));
+        tau_max = hdsp_min(tau_max, x_len);
 
-        for (tau = tau_min; tau <= tau_max; tau++) {
+        fprintf(stderr, "t,tau_min,tau_max: %d/%d/%d\n", t, tau_min, tau_max);
 
+        for (tau = tau_min; tau < tau_max; tau++) {
             y[t] += x[tau] * h[t - tau];
         }
 
