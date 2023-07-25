@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
     fprintf(stderr, "h:\n");
     output_vector_with_newline(h,H_LEN);
 
-    hdsp_test(X_LEN + H_LEN - 1 == hdsp_conv(x, X_LEN, h, H_LEN, y), "It did not work\n");
+    hdsp_test(X_LEN + H_LEN - 1 == hdsp_conv_full(x, X_LEN, h, H_LEN, y), "It did not work\n");
     fprintf(stderr, "y:\n");
     output_vector_with_newline(y, X_LEN + H_LEN - 1);
     return 0;

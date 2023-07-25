@@ -70,7 +70,7 @@ hdsp_status_t hdsp_upsample(int16_t *x, size_t x_len, int upsample_factor, int16
     return HDSP_STATUS_OK;
 }
 
-uint16_t hdsp_conv(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, int16_t *y)
+uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, int16_t *y)
 {
     int16_t t = 0, tau = 0;
     int16_t c_len = x_len + h_len - 1;

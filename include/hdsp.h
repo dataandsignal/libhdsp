@@ -79,10 +79,20 @@ typedef struct hdsp_filter hdsp_filter_t;
  *      upsample_factor - (in) upsampling factor equal to ratio of output frequency to input frequency (Fy / Fx)
  *      y - (in/out) upsampled frame, memory should be pre-allocated
  *      y_len - (in) upsampled frame's length in samples, should be x_len*upsample_factor
+ * Returns HDSP_STATUS_OK on success, HDSP_STATUS_FALSE on error.
  */
 hdsp_status_t hdsp_upsample(int16_t *x, size_t x_len, int upsample_factor, int16_t *y, size_t y_len);
 
-uint16_t hdsp_conv(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, int16_t *y);
+/**
+ * Compute full convolution of input signal x and filter h.
+ * Result is of length x_len + h_len - 1, written to a vector pointed to by y (y must be allocated).
+ *      x - (in) input frame
+ *      x_len - (in) input frame length in samples
+ *      h - (in) input filter
+ *      h_len - (in) filter's length in coefficients
+ * Returns the number of elements written to y (x_len + h_len - 1).
+ */
+uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, int16_t *y);
 
 /**
  * Filter frame x with filter.
