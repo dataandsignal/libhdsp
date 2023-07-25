@@ -37,27 +37,34 @@
 
 #include "hdsp.h"
 
-#define output_vector_with_newline(v, v_len) \
-    for (int i = 0; i < v_len; i++) {fprintf(stderr, "[%d]:%d\n",i,v[i]);}
-#define output_vector_with_tab(v, v_len) \
-    for (int i = 0; i < v_len; i++) {fprintf(stderr, "[%d]:%d\t",i,v[i]);if(i + 1 == v_len){fprintf(stderr,"\n");}}
-
 int main(int argc, char **argv) {
 
     #define X_LEN 8
     #define H_LEN 3
 
+    // Input
     int16_t x[X_LEN] = {0, 1, 2, 3, 4, 5, 6, 7};
     int16_t h[H_LEN] = {0, 1, 2};
+
+    // Output
     int16_t y[X_LEN + H_LEN - 1] = {0};
 
+    // Reference, using MATLAB's conv:
+    // x = x(1:8)
+    // h = 0 : 1 : 2
+    //conv(x,h,"full")
+    int16_t ref[X_LEN + H_LEN - 1] = {0, 0, 1, 4, 7, 10, 13, 16, 19, 14};
+
     fprintf(stderr, "x:\n");
-    output_vector_with_newline(x,X_LEN);
+    hdsp_test_output_vector_with_newline(x,X_LEN);
     fprintf(stderr, "h:\n");
-    output_vector_with_newline(h,H_LEN);
+    hdsp_test_output_vector_with_newline(h,H_LEN);
 
     hdsp_test(X_LEN + H_LEN - 1 == hdsp_conv_full(x, X_LEN, h, H_LEN, y), "It did not work\n");
     fprintf(stderr, "y:\n");
-    output_vector_with_newline(y, X_LEN + H_LEN - 1);
+    hdsp_test_output_vector_with_newline(y, X_LEN + H_LEN - 1);
+
+    hdsp_test_vectors_equal(y, ref, X_LEN + H_LEN - 1);
+
     return 0;
 }

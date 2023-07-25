@@ -99,6 +99,13 @@ uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, 
  */
 hdsp_status_t hdsp_filter(int16_t *x, size_t x_len, hdsp_filter_t *fltr, int16_t *y, size_t *y_len);
 
+#define hdsp_test_output_vector_with_newline(v, v_len) \
+    for (int i = 0; i < v_len; i++) {fprintf(stderr, "[%d]:%d\n",i,v[i]);}
+#define hdsp_test_output_vector_with_tab(v, v_len) \
+    for (int i = 0; i < v_len; i++) {fprintf(stderr, "[%d]:%d\t",i,v[i]);if(i + 1 == v_len){fprintf(stderr,"\n");}}
+#define hdsp_test_vectors_equal(a, b, len) \
+    for (int i = 0; i < len; i++) {if (a[i] != b[i]) {fprintf(stderr, "[%d]:%d!=%d\n",i,a[i],b[i]);exit(EXIT_FAILURE);}}
+
 #ifdef __cplusplus
 }
 #endif
