@@ -76,6 +76,10 @@ uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, 
     int16_t c_len = x_len + h_len - 1;
     int16_t tau_min = 0, tau_max = 0;
 
+    if (!x || !h || !y || x_len < 1 || h_len < 1) {
+        return 0;
+    }
+
     while (t < c_len) {
 
         y[t] = 0;
@@ -100,6 +104,33 @@ uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, 
     }
 
     return t;
+}
+
+uint16_t hdsp_conv(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, hdsp_conv_type_t type,
+                   int16_t *y, uint16_t *idx_start, uint16_t *idx_end)
+{
+    uint16_t n = 0;
+
+    n = hdsp_conv_full(x, x_len, h, h_len, y);
+    if (n != x_len + h_len - 1) {
+        return n;
+    }
+    switch (type) {
+        case HDSP_CONV_TYPE_SAME:
+            *idx_start = floor(h_len/2);
+            *idx_end = *idx_start + x_len - 1;
+            return n;
+        case HDSP_CONV_TYPE_VALID:
+            *idx_start = h_len - 1;
+            *idx_end = x_len + h_len - 1 - (h_len);
+            return n;
+        case HDSP_CONV_TYPE_FULL:
+            *idx_start = 0;
+            *idx_end = *idx_start + n - 1;
+        default:
+            return n;
+    }
+    return n;
 }
 
 hdsp_status_t hdsp_filter(int16_t *x, size_t x_len, hdsp_filter_t *fltr, int16_t *y, size_t *y_len)
