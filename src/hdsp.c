@@ -80,15 +80,20 @@ uint16_t hdsp_conv(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, int16
 
         y[t] = 0;
 
+        // When x_len > h_len
+
         tau_min = (t < h_len - 1) ? 0 : t - (h_len - 1);
-        tau_max = (t < h_len - 1) ? hdsp_min(x_len - 1, (h_len - 1) - t) : t;
+        tau_max = (t < h_len - 1) ? hdsp_min(x_len - 1, t) : t;
         tau_min = hdsp_max(tau_min, t - (h_len - 1));
-        tau_max = hdsp_min(tau_max, x_len);
+        tau_max = hdsp_min(tau_max, x_len - 1);
 
         fprintf(stderr, "t,tau_min,tau_max: %d/%d/%d\n", t, tau_min, tau_max);
 
-        for (tau = tau_min; tau < tau_max; tau++) {
-            y[t] += x[tau] * h[t - tau];
+        for (tau = tau_min; tau <= tau_max; tau++) {
+            int16_t x_v = x[tau];
+            int16_t h_v = h[t-tau];
+            y[t] += x_v * h_v;
+            fprintf(stderr, "-> t=%d,tau_min=%d,tau_max=%d\ttau=%d: x[%d]=%d h[%d]=%d y[%d]=%d\n", t, tau_min, tau_max, tau, tau, x_v, t-tau, h_v, t, y[t]);
         }
 
         t++;
