@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
     // Reference, using MATLAB's conv:
     // x = x(1:8)
     // h = 0 : 1 : 2
-    //conv(x,h,"full")
+    // conv(x,h,"full")
     int16_t ref[X_LEN + H_LEN - 1] = {0, 0, 1, 4, 7, 10, 13, 16, 19, 14};
 
     fprintf(stderr, "x:\n");
@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
     fprintf(stderr, "h:\n");
     hdsp_test_output_vector_with_newline(h,H_LEN);
 
-    hdsp_test(X_LEN + H_LEN - 1 == hdsp_conv_full(x, X_LEN, h, H_LEN, y), "It did not work\n");
+    hdsp_test(X_LEN + H_LEN - 1 == hdsp_conv_full(x, X_LEN, h, H_LEN, y), "It did not work");
     fprintf(stderr, "y:\n");
     hdsp_test_output_vector_with_newline(y, X_LEN + H_LEN - 1);
 
