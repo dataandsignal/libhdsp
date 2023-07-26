@@ -32,7 +32,7 @@
  * Piotr Gregor <piotr@dataandsignal.com>
  * Data And Signal - IT Solutions
  *
- * test3.c - Test (all types of) convolution x*h when length(x) > length(h)
+ * test4.c - Test (all types of) convolution x*h when length(x) < length(h)
  */
 
 
@@ -40,28 +40,28 @@
 
 int main(int argc, char **argv) {
 
-    #define X_LEN 8
-    #define H_LEN 3
+    #define X_LEN 3
+    #define H_LEN 8
 
     // Input
-    int16_t x[X_LEN] = {0, 1, 2, 3, 4, 5, 6, 7};
-    int16_t h[H_LEN] = {0, 1, 2};
+    int16_t x[X_LEN] = {0, 1, 2};
+    int16_t h[H_LEN] = {0, 1, 2, 3, 4, 5, 6, 7};
 
     // Output
     int16_t y[X_LEN + H_LEN - 1] = {0};
     int16_t z[X_LEN + H_LEN - 1] = {0};
-    uint16_t idx_start = 0;
-    uint16_t idx_end = 0;
+    int32_t idx_start = 0;
+    int32_t idx_end = 0;
 
     // Reference, using MATLAB's conv:
-    // x = x(1:8)
-    // h = 0 : 1 : 2
+    // x = 0 : 1 : 2
+    // h = 0 : 1 : 7
     // conv(x,h,"full")
     int16_t ref_conv_full[X_LEN + H_LEN - 1] = {0, 0, 1, 4, 7, 10, 13, 16, 19, 14};
     // conv(x,h,"same")
-    int16_t ref_conv_same[X_LEN] = {0, 1, 4, 7, 10, 13, 16, 19};
+    int16_t ref_conv_same[X_LEN] = {7, 10, 13};
     // conv(x,h,"valid")
-    int16_t ref_conv_valid[6] = {1, 4, 7, 10, 13, 16};
+    int16_t ref_conv_valid[] = {0};
 
     fprintf(stderr, "x:\n");
     hdsp_test_output_vector_with_newline(x,X_LEN);
@@ -95,10 +95,8 @@ int main(int argc, char **argv) {
     fprintf(stderr, "y:\n");
     hdsp_test_output_vector_with_newline(y, X_LEN + H_LEN - 1);
 
-    hdsp_test(idx_start == 2, "Wrong value for idx start");
-    hdsp_test(idx_end == 7, "Wrong value for idx end");
-    memcpy(z, &y[idx_start], sizeof(int16_t) *(idx_end - idx_start + 1));
-    hdsp_test_vectors_equal(z, ref_conv_valid, idx_end - idx_start + 1);
+    hdsp_test(idx_start == 0, "Wrong value for idx start");
+    hdsp_test(idx_end == -1, "Wrong value for idx end");
 
     return 0;
 }
