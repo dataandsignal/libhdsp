@@ -84,10 +84,10 @@ int main(int argc, char **argv) {
     fprintf(stderr, "y:\n");
     hdsp_test_output_vector_with_newline(y, X_LEN + H_LEN - 1);
 
-    hdsp_test(idx_start == 1, "Wrong value for idx start");
-    hdsp_test(idx_end == 8, "Wrong value for idx end");
+    hdsp_test(idx_start == 4, "Wrong value for idx start");
+    hdsp_test(idx_end == 7, "Wrong value for idx end");
     memcpy(z, &y[idx_start], sizeof(int16_t) *(idx_end - idx_start + 1));
-    hdsp_test_vectors_equal(z, ref_conv_same, idx_end - idx_start + 1);
+    hdsp_test_vectors_equal(z, ref_conv_same, idx_end - idx_start);
 
     // Test x*h 'valid'
     hdsp_test(X_LEN + H_LEN - 1 == hdsp_conv(x, X_LEN, h, H_LEN, HDSP_CONV_TYPE_VALID,
@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
     fprintf(stderr, "y:\n");
     hdsp_test_output_vector_with_newline(y, X_LEN + H_LEN - 1);
 
-    hdsp_test(idx_start == 0, "Wrong value for idx start");
+    hdsp_test(idx_start == -1, "Wrong value for idx start");
     hdsp_test(idx_end == -1, "Wrong value for idx end");
 
     return 0;
