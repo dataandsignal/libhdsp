@@ -32,6 +32,7 @@
  * Piotr Gregor <piotr@dataandsignal.com>
  * Data And Signal - IT Solutions
  *
+ * test3.c - Test (all types of) convolution x*h when length(x) > length(h)
  */
 
 

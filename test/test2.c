@@ -32,6 +32,7 @@
  * Piotr Gregor <piotr@dataandsignal.com>
  * Data And Signal - IT Solutions
  *
+ * test2.c - Test 'full' convolution
  */
 
 
