@@ -119,21 +119,21 @@ uint16_t hdsp_conv(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, hdsp_
         case HDSP_CONV_TYPE_SAME:
             *idx_start = floor(h_len/2);
             *idx_end = *idx_start + x_len;
-            return n;
+            break;
         case HDSP_CONV_TYPE_VALID:
-            if (x_len > h_len) {
+            if (x_len >= h_len) {
                 *idx_start = h_len - 1;
-                *idx_end = x_len + h_len - (h_len);
+                *idx_end = x_len;
             } else {
                 *idx_start = -1;
                 *idx_end = -1;
             }
-            return n;
+            break;
         case HDSP_CONV_TYPE_FULL:
+        default:
             *idx_start = 0;
             *idx_end = *idx_start + n - 1;
-        default:
-            return n;
+            break;
     }
     return n;
 }
