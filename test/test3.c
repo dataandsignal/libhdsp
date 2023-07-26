@@ -50,11 +50,11 @@ int main(int argc, char **argv) {
     // Output
     int16_t y[X_LEN + H_LEN - 1] = {0};
     int16_t z[X_LEN + H_LEN - 1] = {0};
-    uint16_t idx_start = 0;
-    uint16_t idx_end = 0;
+    int32_t idx_start = 0;
+    int32_t idx_end = 0;
 
     // Reference, using MATLAB's conv:
-    // x = x(1:8)
+    // x = 0 : 1 : 7
     // h = 0 : 1 : 2
     // conv(x,h,"full")
     int16_t ref_conv_full[X_LEN + H_LEN - 1] = {0, 0, 1, 4, 7, 10, 13, 16, 19, 14};
@@ -85,9 +85,9 @@ int main(int argc, char **argv) {
     hdsp_test_output_vector_with_newline(y, X_LEN + H_LEN - 1);
 
     hdsp_test(idx_start == 1, "Wrong value for idx start");
-    hdsp_test(idx_end == 8, "Wrong value for idx end");
+    hdsp_test(idx_end == 9, "Wrong value for idx end");
     memcpy(z, &y[idx_start], sizeof(int16_t) *(idx_end - idx_start + 1));
-    hdsp_test_vectors_equal(z, ref_conv_same, idx_end - idx_start + 1);
+    hdsp_test_vectors_equal(z, ref_conv_same, idx_end - idx_start);
 
     // Test x*h 'valid'
     hdsp_test(X_LEN + H_LEN - 1 == hdsp_conv(x, X_LEN, h, H_LEN, HDSP_CONV_TYPE_VALID,
@@ -96,9 +96,9 @@ int main(int argc, char **argv) {
     hdsp_test_output_vector_with_newline(y, X_LEN + H_LEN - 1);
 
     hdsp_test(idx_start == 2, "Wrong value for idx start");
-    hdsp_test(idx_end == 7, "Wrong value for idx end");
+    hdsp_test(idx_end == 8, "Wrong value for idx end");
     memcpy(z, &y[idx_start], sizeof(int16_t) *(idx_end - idx_start + 1));
-    hdsp_test_vectors_equal(z, ref_conv_valid, idx_end - idx_start + 1);
+    hdsp_test_vectors_equal(z, ref_conv_valid, idx_end - idx_start);
 
     return 0;
 }

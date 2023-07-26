@@ -111,7 +111,7 @@ uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, 
  *          of filter h were multiplied by samples of x (none of the coefficients of h fallen outside of x)
  * Result is a full-length convolution of size x_len + h_len - 1, written to a vector pointed to by y
  * (y must be allocated). A part of the full-length convolution determined by convolution type is defined
- * by idx_start and idx_end (that point inside y, both).
+ * by idx_start and idx_end.
  *      x - (in) input signal
  *      x_len - (in) input frame length in samples
  *      h - (in) input filter
@@ -119,14 +119,16 @@ uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, 
  *      type - convolution type (HDSP_CONV_TYPE_FULL, HDSP_CONV_TYPE_SAME, HDSP_CONV_TYPE_VALID)
  *      y - (out) output, must point to a valid memory of at least sizeof(int16_t)*(x_len + h_len - 1) bytes.
  *      Full-length convolution is written to y.
- *      idx_start - (out) index of first element in y for the required convolution type (must point to uint16_t),
+ *      idx_start - (out) index of first element in y for the required convolution type (must point to int32_t),
  *      starting from 0
- *      idx_end - (out) index of last element in y for the required convolution type (must point to uint16_t),
- *      starting from 0
- * Returns the number of elements written to y (x_len + h_len - 1).
+ *      idx_end - (out) index of one past the last element in y for the required convolution type
+ *      (must point to int32_t), starting from 0
+ * Returns the number of elements written to y (x_len + h_len - 1) and indices pointing to first and one past the last
+ * element of convolution result for a required convolution type. In case of 'valid' convolution type a result vector
+ * may be empty, which is signalled by idx_start == -1 and idx_end == -1.
  */
 uint16_t hdsp_conv(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, hdsp_conv_type_t type,
-                   int16_t *y, uint16_t *idx_start, uint16_t *idx_end);
+                   int16_t *y, int32_t *idx_start, int32_t *idx_end);
 
 /**
  * Filter frame x with filter.

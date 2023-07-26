@@ -107,7 +107,7 @@ uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, 
 }
 
 uint16_t hdsp_conv(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, hdsp_conv_type_t type,
-                   int16_t *y, uint16_t *idx_start, uint16_t *idx_end)
+                   int16_t *y, int32_t *idx_start, int32_t *idx_end)
 {
     uint16_t n = 0;
 
@@ -118,11 +118,16 @@ uint16_t hdsp_conv(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, hdsp_
     switch (type) {
         case HDSP_CONV_TYPE_SAME:
             *idx_start = floor(h_len/2);
-            *idx_end = *idx_start + x_len - 1;
+            *idx_end = *idx_start + x_len;
             return n;
         case HDSP_CONV_TYPE_VALID:
-            *idx_start = h_len - 1;
-            *idx_end = x_len + h_len - 1 - (h_len);
+            if (x_len > h_len) {
+                *idx_start = h_len - 1;
+                *idx_end = x_len + h_len - (h_len);
+            } else {
+                *idx_start = -1;
+                *idx_end = -1;
+            }
             return n;
         case HDSP_CONV_TYPE_FULL:
             *idx_start = 0;
