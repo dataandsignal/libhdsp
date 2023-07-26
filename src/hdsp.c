@@ -145,10 +145,10 @@ void hdsp_hamming(double *w, uint16_t n) {
 
     if (n % 2) {
         // odd length window
-        half = (n + 1) / 2;	// 129
+        half = (n + 1) / 2;
     } else {
         // even length window
-        half = n / 2;
+        half = floor((double)n / 2);
     }
 
     while (i < half) {

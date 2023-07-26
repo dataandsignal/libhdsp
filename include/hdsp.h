@@ -146,6 +146,7 @@ hdsp_status_t hdsp_filter(int16_t *x, size_t x_len, hdsp_filter_t *fltr, int16_t
 
 void hdsp_die(const char *file, int line, const char *s);
 
+#define HDSP_DOUBLE_ALMOST_EPSILON 0.000001l
 #define hdsp_test(x, m) if (!(x)) hdsp_die(__FILE__, __LINE__, m);
 #define hdsp_test_output_vector_with_newline(v, v_len) \
     for (int i = 0; i < v_len; i++) {fprintf(stderr, "[%d]:%d\n",i,v[i]);}
@@ -154,12 +155,15 @@ void hdsp_die(const char *file, int line, const char *s);
 #define hdsp_test_vectors_equal(a, b, len) \
     for (int i = 0; i < len; i++) {if (a[i] != b[i]) {fprintf(stderr, "[%d]:%d!=%d\n",i,a[i],b[i]);exit(EXIT_FAILURE);}}
 #define HDSP_EQUAL_DOUBLES(a,b) (fabs((a) - (b)) <= DBL_EPSILON)
+#define HDSP_EQUAL_ALMOST_DOUBLES(a,b) (fabs((a) - (b)) <= HDSP_DOUBLE_ALMOST_EPSILON)
 #define hdsp_test_output_vector_with_newline_double(v, v_len) \
     for (int i = 0; i < v_len; i++) {fprintf(stderr, "[%d]:%f\n",i,v[i]);}
 #define hdsp_test_output_vector_with_tab_double(v, v_len) \
     for (int i = 0; i < v_len; i++) {fprintf(stderr, "[%d]:%f\t",i,v[i]);if(i + 1 == v_len){fprintf(stderr,"\n");}}
 #define hdsp_test_vectors_equal_double(a, b, len) \
     for (int i = 0; i < len; i++) {if (!HDSP_EQUAL_DOUBLES(a[i],b[i])) {fprintf(stderr, "[%d]:%f!=%f\n",i,a[i],b[i]);exit(EXIT_FAILURE);}}
+#define hdsp_test_vectors_equal_almost_double(a, b, len) \
+    for (int i = 0; i < len; i++) {if (!HDSP_EQUAL_ALMOST_DOUBLES(a[i],b[i])) {fprintf(stderr, "[%d]:%f!=%f\n",i,a[i],b[i]);exit(EXIT_FAILURE);}}
 
 #ifdef __cplusplus
 }
