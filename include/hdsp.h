@@ -117,7 +117,7 @@ uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, 
  *      h - (in) input filter
  *      h_len - (in) number of filter's coefficients
  *      type - convolution type (HDSP_CONV_TYPE_FULL, HDSP_CONV_TYPE_SAME, HDSP_CONV_TYPE_VALID)
- *      y - (out) output, must point to a valid memory of at least sizeof(int16_t)*(x_len + h_len - 1) bytes.
+ *      y - (out) output, must point to a valid memory of at least sizeof(int16_t)*(x_len + h_len - 1) bytes
  *      Full-length convolution is written to y.
  *      idx_start - (out) index of first element in y for the required convolution type (must point to int32_t),
  *      starting from 0
@@ -129,6 +129,13 @@ uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, 
  */
 uint16_t hdsp_conv(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, hdsp_conv_type_t type,
                    int16_t *y, int32_t *idx_start, int32_t *idx_end);
+
+/**
+ * Create N-point symmetric Hamming window.
+ *      y - (out) result (must point to a valid memory of at least sizeof(double)*n bytes
+ *      n - (in) number of points
+ */
+void hdsp_hamming(double *w, uint16_t n);
 
 /**
  * Filter frame x with filter.
@@ -146,6 +153,13 @@ void hdsp_die(const char *file, int line, const char *s);
     for (int i = 0; i < v_len; i++) {fprintf(stderr, "[%d]:%d\t",i,v[i]);if(i + 1 == v_len){fprintf(stderr,"\n");}}
 #define hdsp_test_vectors_equal(a, b, len) \
     for (int i = 0; i < len; i++) {if (a[i] != b[i]) {fprintf(stderr, "[%d]:%d!=%d\n",i,a[i],b[i]);exit(EXIT_FAILURE);}}
+#define HDSP_EQUAL_DOUBLES(a,b) (fabs((a) - (b)) <= DBL_EPSILON)
+#define hdsp_test_output_vector_with_newline_double(v, v_len) \
+    for (int i = 0; i < v_len; i++) {fprintf(stderr, "[%d]:%f\n",i,v[i]);}
+#define hdsp_test_output_vector_with_tab_double(v, v_len) \
+    for (int i = 0; i < v_len; i++) {fprintf(stderr, "[%d]:%f\t",i,v[i]);if(i + 1 == v_len){fprintf(stderr,"\n");}}
+#define hdsp_test_vectors_equal_double(a, b, len) \
+    for (int i = 0; i < len; i++) {if (!HDSP_EQUAL_DOUBLES(a[i],b[i])) {fprintf(stderr, "[%d]:%f!=%f\n",i,a[i],b[i]);exit(EXIT_FAILURE);}}
 
 #ifdef __cplusplus
 }

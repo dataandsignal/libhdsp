@@ -138,6 +138,27 @@ uint16_t hdsp_conv(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, hdsp_
     return n;
 }
 
+void hdsp_hamming(double *w, uint16_t n) {
+
+    uint16_t half = 0;
+    int i = 0;
+
+    if (n % 2) {
+        // odd length window
+        half = (n + 1) / 2;	// 129
+    } else {
+        // even length window
+        half = n / 2;
+    }
+
+    while (i < half) {
+        w[i] = 0.54 - 0.46 * cos(2 * M_PI * ((double) i / (double) (n - 1)));
+        w[n - 1 - i] = w[i];
+        i++;
+    }
+
+}
+
 hdsp_status_t hdsp_filter(int16_t *x, size_t x_len, hdsp_filter_t *fltr, int16_t *y, size_t *y_len)
 {
     return HDSP_STATUS_OK;
