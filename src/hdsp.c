@@ -205,14 +205,21 @@ void hdsp_design_kaiser_n_beta(uint16_t passband_freq, uint16_t fs, double stopb
     double attenuation_db = -20.0 * log10(delta);
     double D = (attenuation_db - 7.95) / (2.0 * M_PI * 2.285);   // 7.95 was in Kaiser's original paper
     double df = fabs(stopband_freq_normalized_2pi - passband_freq_normalized_2pi);
-    *n = D / df + 1;
-    *beta = hdsp_kaiser_beta(attenuation_db);
+
+    if (n) {
+        *n = D / df + 1;
+    }
+
+    if (beta) {
+        *beta = hdsp_kaiser_beta(attenuation_db);
+    }
 }
 
 hdsp_status_t hdsp_filter(int16_t *x, size_t x_len, hdsp_filter_t *fltr, int16_t *y, size_t *y_len)
 {
     return HDSP_STATUS_OK;
 }
+
 double hdsp_modified_bessel_1st_kind_zero(double x)
 {
     int k = 0;

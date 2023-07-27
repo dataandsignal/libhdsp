@@ -98,6 +98,9 @@ int main(int argc, char **argv) {
     v = hdsp_modified_bessel_1st_kind_zero(10);
     hdsp_test(HDSP_EQUAL_ALMOST_DOUBLES(BESSEL_0_10,v), "Wrong Bessel value");
 
+    // Test kaiser beta design
+    v = hdsp_kaiser
+
     // Test N=3
     hdsp_kaiser_window(w3, W3_LEN, 10);
     fprintf(stderr, "N=3:\n");
