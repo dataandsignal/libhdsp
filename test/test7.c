@@ -42,6 +42,13 @@ int main(int argc, char **argv) {
 
     // MATLAB: besseli(0,10)
     #define BESSEL_0_10 2815.716628
+    #define KAISER_ATTENUATION_DB_REF 60
+    #define KAISER_BETA_REF 5.653260
+    #define PASSBAND_FREQ_HZ 8000
+    #define FS_HZ 48000
+    #define STOPBAND_ATTENUATION_DB 60
+    #define PASSBAND_RIPPLE_DB 0.1
+    #define KAISER_NUMBER_OF_POINTS_REF 70.274957
     #define W3_LEN 3
     #define W4_LEN 4
     #define W74_LEN 74
@@ -92,6 +99,7 @@ int main(int argc, char **argv) {
             0.00211526,0.00101181,0.00035515};
 
     double v = 0.0;
+    double n = 0, beta = 0.0;
 
 
     // Test modified Bessel 1st kind at order n = 0
@@ -99,7 +107,14 @@ int main(int argc, char **argv) {
     hdsp_test(HDSP_EQUAL_ALMOST_DOUBLES(BESSEL_0_10,v), "Wrong Bessel value");
 
     // Test kaiser beta design
-    v = hdsp_kaiser
+    v = hdsp_kaiser_beta(KAISER_ATTENUATION_DB_REF);
+    hdsp_test(HDSP_EQUAL_ALMOST_DOUBLES(v, KAISER_BETA_REF), "Wrong Kaiser beta designed");
+
+    // Test Kaiser beta and number of points design
+    hdsp_design_kaiser_n_beta(PASSBAND_FREQ_HZ, FS_HZ, STOPBAND_ATTENUATION_DB, PASSBAND_RIPPLE_DB, &n, &beta);
+    fprintf(stderr,"%f/%f\n", n, KAISER_NUMBER_OF_POINTS_REF);
+    hdsp_test(HDSP_EQUAL_ALMOST_DOUBLES(n, KAISER_NUMBER_OF_POINTS_REF), "Wrong Kaiser number of points designed");
+    hdsp_test(HDSP_EQUAL_ALMOST_DOUBLES(beta, KAISER_BETA_REF), "Wrong Kaiser beta designed");
 
     // Test N=3
     hdsp_kaiser_window(w3, W3_LEN, 10);

@@ -188,7 +188,7 @@ double hdsp_kaiser_beta(double attenuation_db)
 }
 
 void hdsp_design_kaiser_n_beta(uint16_t passband_freq, uint16_t fs, double stopband_attenuation_db, double passband_ripple_db,
-                               uint16_t *n, double *beta)
+                               double *n, double *beta)
 {
     double passband_freq_normalized = (double) passband_freq / ((double)fs / 2.0);
     double stopband_attenuation_linear = HDSP_KAISER_FILTER_STOPBAND_ATTENUATION_DB_TO_LINEAR(stopband_attenuation_db);
@@ -198,15 +198,21 @@ void hdsp_design_kaiser_n_beta(uint16_t passband_freq, uint16_t fs, double stopb
     double stopband_freq_normalized = passband_freq_normalized + tw;
     double stopband_freq = stopband_freq_normalized * ((double)fs / 2.0);
 
-    double passband_freq_normalized_2pi = 2.0 * passband_freq_normalized;
-    double stopband_freq_normalized_2pi = 2.0 * stopband_freq_normalized;
+    double passband_freq_normalized_2pi = passband_freq_normalized / 2.0;
+    double stopband_freq_normalized_2pi = stopband_freq_normalized / 2.0;
 
     double delta = hdsp_min(passband_ripple_linear, stopband_attenuation_linear);
     double attenuation_db = -20.0 * log10(delta);
     double D = (attenuation_db - 7.95) / (2.0 * M_PI * 2.285);   // 7.95 was in Kaiser's original paper
     double df = fabs(stopband_freq_normalized_2pi - passband_freq_normalized_2pi);
 
+    fprintf(stderr, "->passband_ripple_linear: %f\n", passband_ripple_linear);
+    fprintf(stderr, "->stopband_attenuation_linear: %f\n", stopband_attenuation_linear);
+    fprintf(stderr, "->attenuation_db: %f\n", attenuation_db);
+
     if (n) {
+        fprintf(stderr, "->D: %f\n", D);
+        fprintf(stderr, "->df: %f\n", df);
         *n = D / df + 1;
     }
 

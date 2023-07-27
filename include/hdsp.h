@@ -170,7 +170,7 @@ double hdsp_kaiser_beta(double attenuation_db);
  *      beta - (out) Kaiser beta
  */
 void hdsp_design_kaiser_n_beta(uint16_t passband_freq, uint16_t fs, double stopband_attenuation_db,
-                               double passband_ripple_db, uint16_t *n, double *beta)
+                               double passband_ripple_db, double *n, double *beta);
 
 /**
  * Filter frame x with filter.
