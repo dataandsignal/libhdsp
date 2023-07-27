@@ -32,7 +32,7 @@
  * Piotr Gregor <piotr@dataandsignal.com>
  * Data And Signal - IT Solutions
  *
- * test6.c - Test hdsp_hamming_window (a Hammng window)
+ * test6.c - Test hdsp_hamming (a Hammng window)
  */
 
 
@@ -152,13 +152,13 @@ int main(int argc, char **argv) {
     hdsp_hamming_window(w3, W3_LEN);
     fprintf(stderr, "N=3:\n");
     hdsp_test_output_vector_with_newline_double(w3, W3_LEN);
-    hdsp_test_vectors_equal_almost_double(w3, w3_ref, W3_LEN);
+    hdsp_test_vectors_equal_double(w3, w3_ref, W3_LEN);
 
     // Test N=4
     hdsp_hamming_window(w4, W4_LEN);
     fprintf(stderr, "N=4:\n");
     hdsp_test_output_vector_with_newline_double(w4, W4_LEN);
-    hdsp_test_vectors_equal_almost_double(w4, w4_ref, W4_LEN);
+    hdsp_test_vectors_equal_double(w4, w4_ref, W4_LEN);
 
     // Test N=256
     hdsp_hamming_window(w256, W256_LEN);
