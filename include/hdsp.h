@@ -53,6 +53,13 @@ extern "C" {
 #include <math.h>
 #include <float.h>
 
+#define HDSP_KAISER_FILTER_STOPBAND_ATTENUATION_DB 60
+#define HDSP_KAISER_FILTER_PASSBAND_RIPPLE 0.1
+#define HDSP_KAISER_FILTER_STEEPNES 0.85
+#define HDSP_KAISER_FILTER_STOPBAND_ATTENUATION_DB_TO_LINEAR(x) pow(10.0,(double)(-x)/20.0)
+#define HDSP_KAISER_FILTER_PASSBAND_RIPPLE_DB_TO_LINEAR(x) \
+    (pow(10.0, ((double)(x)/20.0)) - 1.0)/(pow(10.0,((double)(x)/20.0)) + 1.0)
+
 enum hdsp_conv_type {
     HDSP_CONV_TYPE_FULL,
     HDSP_CONV_TYPE_SAME,

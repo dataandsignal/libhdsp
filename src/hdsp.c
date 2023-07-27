@@ -173,10 +173,40 @@ void hdsp_kaiser_window(double *w, uint16_t n, double beta)
     }
 
     while (i < half) {
-        w[i] = hdsp_modified_bessel_1st_kind_zero(beta * sqrt(1 - ((2*(double)(i)/(double)(n-1))-1)*((2*(double)(i)/(double)(n-1))-1))) / bes;
+        w[i] = hdsp_modified_bessel_1st_kind_zero(beta *
+                sqrt(1 - ((2 * (double)(i) / (double)(n - 1)) - 1) * ((2 * (double)(i) / (double)(n - 1)) - 1))) / bes;
         w[n - 1 - i] = w[i];
         i++;
     }
+}
+
+double hdsp_kaiser_beta(double attenuation_db)
+{
+    return 0.1102 * (attenuation_db - 8.7) * (attenuation_db > 50.0 ? 1 : 0) +
+        (0.5842 * pow(attenuation_db - 21.0, 0.4) + 0.07886 * (attenuation_db - 21.0))
+            * (attenuation_db >= 21.0 && attenuation_db <= 50.0 ? 1 : 0);
+}
+
+void hdsp_design_kaiser_n_beta(uint16_t passband_freq, uint16_t fs, double stopband_attenuation_db, double passband_ripple_db,
+                               uint16_t *n, double *beta)
+{
+    double passband_freq_normalized = (double) passband_freq / ((double)fs / 2.0);
+    double stopband_attenuation_linear = HDSP_KAISER_FILTER_STOPBAND_ATTENUATION_DB_TO_LINEAR(stopband_attenuation_db);
+    double passband_ripple_linear = HDSP_KAISER_FILTER_PASSBAND_RIPPLE_DB_TO_LINEAR(passband_ripple_db);
+    double tw_percentage = -0.98 * HDSP_KAISER_FILTER_STEEPNES + 0.99;
+    double tw = tw_percentage * (1.0 - passband_freq_normalized);
+    double stopband_freq_normalized = passband_freq_normalized + tw;
+    double stopband_freq = stopband_freq_normalized * ((double)fs / 2.0);
+
+    double passband_freq_normalized_2pi = 2.0 * passband_freq_normalized;
+    double stopband_freq_normalized_2pi = 2.0 * stopband_freq_normalized;
+
+    double delta = hdsp_min(passband_ripple_linear, stopband_attenuation_linear);
+    double attenuation_db = -20.0 * log10(delta);
+    double D = (attenuation_db - 7.95) / (2.0 * M_PI * 2.285);   // 7.95 was in Kaiser's original paper
+    double df = fabs(stopband_freq_normalized_2pi - passband_freq_normalized_2pi);
+    *n = D / df + 1;
+    *beta = hdsp_kaiser_beta(attenuation_db);
 }
 
 hdsp_status_t hdsp_filter(int16_t *x, size_t x_len, hdsp_filter_t *fltr, int16_t *y, size_t *y_len)
