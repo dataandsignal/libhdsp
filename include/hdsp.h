@@ -135,18 +135,52 @@ uint16_t hdsp_conv(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, hdsp_
  *      y - (out) result (must point to a valid memory of at least sizeof(double)*n bytes
  *      n - (in) number of points
  */
-void hdsp_hamming(double *w, uint16_t n);
+void hdsp_hamming_window(double *w, uint16_t n);
+
+/**
+ * Create N-point symmetric Kaiser window.
+ *      y - (out) result (must point to a valid memory of at least sizeof(double)*n bytes
+ *      n - (in) number of points
+ *      beta - beta coefficient that determines the shape of the Kaiser window. In the frequency domain,
+ *      it determines the trade-off between main-lobe width and side lobe level
+ */
+void hdsp_kaiser_window(double *w, uint16_t n, double beta);
 
 /**
  * Filter frame x with filter.
  */
 hdsp_status_t hdsp_filter(int16_t *x, size_t x_len, hdsp_filter_t *fltr, int16_t *y, size_t *y_len);
 
+#define HDSP_FACTORIAL_MAX 40
+double hdsp_factorial[HDSP_FACTORIAL_MAX + 1] = {
+        1.0,1.0,2.0,6.0,24.0,120.0,720.0,
+        5040.0,40320.0,362880.0,3628800.0,39916800.0,
+        479001600.0,6227020800.0,87178291200.0,1307674368000.0,
+        20922789888000.0,355687428096000.0,6402373705728000.0,
+        121645100408832000.0,2432902008176640000.0,51090942171709440000.0,
+        1124000727777607680000.0,25852016738884978212864.0,620448401733239409999872.0,
+        15511210043330986055303168.0,403291461126605650322784256.0,10888869450418351940239884288.0,
+        304888344611713836734530715648.0,8841761993739700772720181510144.0,
+        265252859812191032188804700045312.0,8222838654177922430198509928972288.0,
+        263130836933693517766352317727113216.0,8683317618811885938715673895318323200.0,
+        295232799039604119555149671006000381952.0,10333147966386144222209170348167175077888.0,
+        371993326789901177492420297158468206329856.0,13763753091226343102992036262845720547033088.0,
+        523022617466601037913697377988137380787257344.0,20397882081197441587828472941238084160318341120.0,
+        815915283247897683795548521301193790359984930816.0
+};
+
+/**
+ * Returns value of the modified Bessel function of the first kind for argument x, I_zero(x).
+ * Value is approximated using series with k = 0 to HDSP_FACTORIAL_MAX.
+ * https://mathworld.wolfram.com/ModifiedBesselFunctionoftheFirstKind.html
+ */
+double hdsp_modified_bessel_1st_kind_zero(double x);
+
 /* Tests */
 
 void hdsp_die(const char *file, int line, const char *s);
 
-#define HDSP_DOUBLE_ALMOST_EPSILON 0.000001l
+#define HDSP_DOUBLE_ALMOST_EPSILON 0.000001
 #define hdsp_test(x, m) if (!(x)) hdsp_die(__FILE__, __LINE__, m);
 #define hdsp_test_output_vector_with_newline(v, v_len) \
     for (int i = 0; i < v_len; i++) {fprintf(stderr, "[%d]:%d\n",i,v[i]);}

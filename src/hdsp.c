@@ -138,8 +138,8 @@ uint16_t hdsp_conv(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, hdsp_
     return n;
 }
 
-void hdsp_hamming(double *w, uint16_t n) {
-
+void hdsp_hamming_window(double *w, uint16_t n)
+{
     uint16_t half = 0;
     int i = 0;
 
@@ -156,12 +156,45 @@ void hdsp_hamming(double *w, uint16_t n) {
         w[n - 1 - i] = w[i];
         i++;
     }
+}
 
+void hdsp_kaiser_window(double *w, uint16_t n, double beta)
+{
+    double bes = fabs(hdsp_modified_bessel_1st_kind_zero(beta));
+    uint16_t half = 0;
+    int i = 0;
+
+    if (n % 2) {
+        // odd length window
+        half = (n + 1) / 2;
+    } else {
+        // even length window
+        half = floor((double)n / 2);
+    }
+
+    while (i < half) {
+        w[i] = hdsp_modified_bessel_1st_kind_zero(beta * sqrt(1 - ((2*(double)(i)/(double)(n-1))-1)*((2*(double)(i)/(double)(n-1))-1))) / bes;
+        w[n - 1 - i] = w[i];
+        i++;
+    }
 }
 
 hdsp_status_t hdsp_filter(int16_t *x, size_t x_len, hdsp_filter_t *fltr, int16_t *y, size_t *y_len)
 {
     return HDSP_STATUS_OK;
+}
+double hdsp_modified_bessel_1st_kind_zero(double x)
+{
+    int k = 0;
+    double v = 0.0, nominator = 1.0, denominator = 1.0;
+    double factor = 1.0/4.0 * x * x;
+    while (k < HDSP_FACTORIAL_MAX) {
+        nominator *= (k > 0 ? factor : 1);
+        denominator = hdsp_factorial[k] * hdsp_factorial[k];
+        v += nominator / denominator;
+        k = k + 1;
+    }
+    return v;
 }
 
 void hdsp_die(const char *file, int line, const char *reason)
