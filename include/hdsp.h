@@ -160,17 +160,17 @@ void hdsp_kaiser_window(double *w, uint16_t n, double beta);
 double hdsp_kaiser_beta(double attenuation_db);
 
 /**
- * Design optimal beta and number of points for lowpass Kaiser filter characterised by desired values
+ * Design optimal beta and number of points (filter length) for lowpass Kaiser filter characterised by desired values
  * of passband frequency in Hz, stopband attenuation in dB and passband ripple in dB, at a given sampling rate.
  *      passband_freq - (in) passband frequency of the lowpass filter in Hz
  *      fs - (in) sampling frequency in Hz
  *      stopband_attenuation_db - (in) stopband attenuation in dB
  *      passband_ripple_db - (in) passband ripple in dB
- *      n - (out) number of points
+ *      n - (out) number of points (filter length)
  *      beta - (out) Kaiser beta
  */
 void hdsp_design_kaiser_n_beta(uint16_t passband_freq, uint16_t fs, double stopband_attenuation_db,
-                               double passband_ripple_db, double *n, double *beta);
+                               double passband_ripple_db, uint16_t *n, double *beta);
 
 /**
  * Filter frame x with filter.

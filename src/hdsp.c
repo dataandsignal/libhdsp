@@ -188,7 +188,7 @@ double hdsp_kaiser_beta(double attenuation_db)
 }
 
 void hdsp_design_kaiser_n_beta(uint16_t passband_freq, uint16_t fs, double stopband_attenuation_db, double passband_ripple_db,
-                               double *n, double *beta)
+                               uint16_t *n, double *beta)
 {
     double passband_freq_normalized = (double) passband_freq / ((double)fs / 2.0);
     double stopband_attenuation_linear = HDSP_KAISER_FILTER_STOPBAND_ATTENUATION_DB_TO_LINEAR(stopband_attenuation_db);
@@ -213,7 +213,7 @@ void hdsp_design_kaiser_n_beta(uint16_t passband_freq, uint16_t fs, double stopb
     if (n) {
         fprintf(stderr, "->D: %f\n", D);
         fprintf(stderr, "->df: %f\n", df);
-        *n = D / df + 1;
+        *n = ceil(D / df + 1);
     }
 
     if (beta) {
