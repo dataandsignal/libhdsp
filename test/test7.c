@@ -32,7 +32,7 @@
  * Piotr Gregor <piotr@dataandsignal.com>
  * Data And Signal - IT Solutions
  *
- * test6.c - Test hdsp_kaiser_window (a Kaiser window)
+ * test6.c - Test Kaiser window and Kaiser window design
  */
 
 
@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
     v = hdsp_modified_bessel_1st_kind_zero(10);
     hdsp_test(HDSP_EQUAL_ALMOST_DOUBLES(BESSEL_0_10,v), "Wrong Bessel value");
 
-    // Test kaiser beta design
+    // Test Kaiser beta design
     v = hdsp_kaiser_beta(KAISER_ATTENUATION_DB_REF);
     hdsp_test(HDSP_EQUAL_ALMOST_DOUBLES(v, KAISER_BETA_REF), "Wrong Kaiser beta designed");
 
