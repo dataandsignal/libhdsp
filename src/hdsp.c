@@ -221,7 +221,37 @@ void hdsp_design_kaiser_n_beta(uint16_t passband_freq, uint16_t fs, double stopb
     }
 }
 
-hdsp_status_t hdsp_filter(int16_t *x, size_t x_len, hdsp_filter_t *fltr, int16_t *y, size_t *y_len)
+double hdsp_sinc(double x, double fs_hz) {
+    if (fabs(x) < 1.0 / fs) {
+        return 1.0;
+    }
+
+    return sin(M_PI * x) / (M_PI * x);
+}
+
+hdsp_status_t hdsp_fir_filter_init_lowpass(hdsp_filter_t *filter, size_t n, double fs_hz, double passband_freq_hz) {
+
+    size_t k = 0;
+    size_t L2 = (n - 1) / 2;
+
+    if (!filter || (n > HDSP_FIR_FILTER_LEN_MAX) || (passband_freq_hz > fs_hz)) {
+        return HDSP_STATUS_FALSE;
+    }
+
+    while (k < n) {
+        filter->b[k] = (2.0 * passband_freq_hz / (double)fs_hz)
+                * hdsp_sinc(2.0 * passband_freq_hz * (k - L2) / (double)fs_hz, fs_hz);
+        k++;
+    }
+
+    filter->b_len = n;
+    filter->passband_freq_hz = passband_freq_hz;
+    filter->fs_hz = fs_hz;
+
+    return HDSP_STATUS_OK;
+}
+
+hdsp_status_t hdsp_filter(int16_t *x, size_t x_len, hdsp_filter_t *fltr, double *y, size_t *y_len)
 {
     return HDSP_STATUS_OK;
 }

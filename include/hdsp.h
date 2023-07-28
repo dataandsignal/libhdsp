@@ -53,6 +53,7 @@ extern "C" {
 #include <math.h>
 #include <float.h>
 
+#define HDSP_FIR_FILTER_LEN_MAX 4096
 #define HDSP_KAISER_FILTER_STOPBAND_ATTENUATION_DB 60
 #define HDSP_KAISER_FILTER_PASSBAND_RIPPLE 0.1
 #define HDSP_KAISER_FILTER_STEEPNES 0.85
@@ -77,10 +78,14 @@ enum hdsp_status {
 typedef enum hdsp_status hdsp_status_t;
 
 struct hdsp_filter {
-    int16_t *a;
-    int16_t *b;
+    double a[HDSP_FIR_FILTER_LEN_MAX]; // nominator
     size_t a_len;
+    double b[HDSP_FIR_FILTER_LEN_MAX]; // denominator
     size_t b_len;
+    double w[HDSP_FIR_FILTER_LEN_MAX]; // window
+    size_t w_len;
+    double passband_freq_hz; // Passband frequency in Hertz
+    double fs_hz; // Sampling rate in Hz
 };
 typedef struct hdsp_filter hdsp_filter_t;
 
@@ -171,6 +176,17 @@ double hdsp_kaiser_beta(double attenuation_db);
  */
 void hdsp_design_kaiser_n_beta(uint16_t passband_freq, uint16_t fs, double stopband_attenuation_db,
                                double passband_ripple_db, uint16_t *n, double *beta);
+
+/**
+ * Returns sinc(x) value.
+ */
+double hdsp_sinc(double x, double fs_hz);
+
+/**
+ * Initializes filter to Finite Impulse Response lowpass filter by sampling inverse of the spectrum
+ * of perfect rectangle lowpass filter.
+ */
+hdsp_status_t hdsp_fir_filter_init_lowpass(hdsp_filter_t *filter, size_t n, double fs_hz, double passband_freq_hz);
 
 /**
  * Filter frame x with filter.
