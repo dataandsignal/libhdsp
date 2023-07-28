@@ -13,7 +13,7 @@ bin_PROGRAMS = lhdsptool
 lhdsptool_SOURCES = test/hdsptool.c
 lhdsptool_LDADD = libhdsp.la
 
-check_PROGRAMS = test1 test2 test3 test4 test5 test6 test7
+check_PROGRAMS = test1 test2 test3 test4 test5 test6 test7 test8
 TESTS = $(check_PROGRAMS)
 
 test1_SOURCES = test/test1.c
@@ -43,4 +43,8 @@ test6_LDADD = libhdsp.la
 test7_SOURCES = test/test7.c
 test7_CFLAGS = -Iinclude
 test7_LDADD = libhdsp.la
+
+test8_SOURCES = test/test8.c
+test8_CFLAGS = -Iinclude
+test8_LDADD = libhdsp.la
 

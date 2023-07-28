@@ -191,7 +191,7 @@ hdsp_status_t hdsp_fir_filter_init_lowpass(hdsp_filter_t *filter, size_t n, doub
 /**
  * Filter frame x with filter.
  */
-hdsp_status_t hdsp_filter(int16_t *x, size_t x_len, hdsp_filter_t *fltr, int16_t *y, size_t *y_len);
+hdsp_status_t hdsp_filter(int16_t *x, size_t x_len, hdsp_filter_t *fltr, double *y, size_t *y_len);
 
 #define HDSP_FACTORIAL_MAX 40
 double hdsp_factorial[HDSP_FACTORIAL_MAX + 1] = {

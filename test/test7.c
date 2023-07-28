@@ -32,7 +32,7 @@
  * Piotr Gregor <piotr@dataandsignal.com>
  * Data And Signal - IT Solutions
  *
- * test6.c - Test Kaiser window and Kaiser window design
+ * test7.c - Test Kaiser window and Kaiser window design
  */
 
 
@@ -139,7 +139,6 @@ int main(int argc, char **argv) {
     fprintf(stderr, "N=75:\n");
     hdsp_test_output_vector_with_newline_double(w75, W75_LEN);
     hdsp_test_vectors_equal_almost_double(w75, w75_ref, W75_LEN);
-
 
     return 0;
 }

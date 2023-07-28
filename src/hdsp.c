@@ -222,7 +222,7 @@ void hdsp_design_kaiser_n_beta(uint16_t passband_freq, uint16_t fs, double stopb
 }
 
 double hdsp_sinc(double x, double fs_hz) {
-    if (fabs(x) < 1.0 / fs) {
+    if (fabs(x) < 1.0 / fs_hz) {
         return 1.0;
     }
 
@@ -231,8 +231,8 @@ double hdsp_sinc(double x, double fs_hz) {
 
 hdsp_status_t hdsp_fir_filter_init_lowpass(hdsp_filter_t *filter, size_t n, double fs_hz, double passband_freq_hz) {
 
-    size_t k = 0;
-    size_t L2 = (n - 1) / 2;
+    int32_t k = 0;
+    int32_t L2 = (n - 1) / 2;
 
     if (!filter || (n > HDSP_FIR_FILTER_LEN_MAX) || (passband_freq_hz > fs_hz)) {
         return HDSP_STATUS_FALSE;
