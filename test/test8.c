@@ -69,6 +69,25 @@ int main(int argc, char **argv) {
     double v = 0.0;
     uint16_t n = 0;
     double beta = 0.0;
+    double w[HDSP_FIR_FILTER_LEN_MAX] = {0};
+
+    double lowpass_4000_8000_ref[57] = {
+            0.0002317719, 0.0002933296, 0.0000653322, -0.0005152687,
+            -0.0011996204, -0.0014443471, -0.0007086233, 0.0010787318,
+            0.0031880267, 0.0042290905, 0.0028736999, -0.0011307916,
+            -0.0062838011, -0.0096164325, -0.0081152050, -0.0007340415,
+            0.0101430054, 0.0189368961, 0.0192239944, 0.0074220577,
+            -0.0139930822, -0.0357312183, -0.0444435302, -0.0283134534,
+            0.0168563899, 0.0840521946, 0.1560909305, 0.2113680921,
+            0.2320833333, 0.2113680921, 0.1560909305, 0.0840521946,
+            0.0168563899, -0.0283134534, -0.0444435302, -0.0357312183,
+            -0.0139930822, 0.0074220577, 0.0192239944, 0.0189368961,
+            0.0101430054, -0.0007340415, -0.0081152050, -0.0096164325,
+            -0.0062838011, -0.0011307916, 0.0028736999, 0.0042290905,
+            0.0031880267, 0.0010787318, -0.0007086233, -0.0014443471,
+            -0.0011996204, -0.0005152687, 0.0000653322, 0.0002933296,
+            0.0002317719
+    };
 
 
     // 1. Test implementation methods
@@ -95,7 +114,7 @@ int main(int argc, char **argv) {
     hdsp_test(filter.design_method == HDSP_FILTER_DESIGN_METHOD_LEAST_SQUARES, "Wrong design method");
     fprintf(stderr, "b:\n");
     hdsp_test_output_vector_with_newline_double(filter.b, filter.b_len);
-    hdsp_test_vectors_equal_almost_double(filter.b, hdsp_fir_ls_kaiser_57_4000_48000, filter.b_len);
+    hdsp_test_vectors_equal_almost_double(filter.b, hdsp_fir_ls_57_4000_48000, filter.b_len);
 
     // Fs=48000, Wpass=8000
     hdsp_test(HDSP_STATUS_OK == hdsp_fir_filter_init_lowpass_by_ls(&filter, HDSP_FIR_LS_KAISER_75_8000_48000_LEN,
@@ -105,7 +124,7 @@ int main(int argc, char **argv) {
     hdsp_test(filter.design_method == HDSP_FILTER_DESIGN_METHOD_LEAST_SQUARES, "Wrong design method");
     fprintf(stderr, "b:\n");
     hdsp_test_output_vector_with_newline_double(filter.b, filter.b_len);
-    hdsp_test_vectors_equal_almost_double(filter.b, hdsp_fir_ls_kaiser_75_8000_48000, filter.b_len);
+    hdsp_test_vectors_equal_almost_double(filter.b, hdsp_fir_ls_75_8000_48000, filter.b_len);
 
     // Test lowpass windowed filter created by least squares method
 
@@ -113,11 +132,19 @@ int main(int argc, char **argv) {
     hdsp_test(HDSP_STATUS_OK == hdsp_fir_filter_init_lowpass_by_ls(&filter, HDSP_FIR_LS_KAISER_57_4000_48000_LEN,
                                                                    FS_HZ, 4000),
               "Filter initialisation failed");
+    hdsp_kaiser_window(w, HDSP_FIR_LS_KAISER_57_4000_48000_LEN, HDSP_KAISER_FILTER_BETA_DEFAULT);
+    hdsp_test(HDSP_STATUS_OK == hdsp_fir_filter_shape(&filter, w, HDSP_FIR_LS_KAISER_57_4000_48000_LEN),
+              "Filter shape failed");
+    hdsp_test_vectors_equal_almost_double(filter.b, hdsp_fir_ls_kaiser_57_4000_48000, filter.b_len);
 
     // Fs=48000, Wpass=8000
     hdsp_test(HDSP_STATUS_OK == hdsp_fir_filter_init_lowpass_by_ls(&filter, HDSP_FIR_LS_KAISER_75_8000_48000_LEN,
                                                                    FS_HZ, 8000),
               "Filter initialisation failed");
+    hdsp_kaiser_window(w, HDSP_FIR_LS_KAISER_75_8000_48000_LEN, HDSP_KAISER_FILTER_BETA_DEFAULT);
+    hdsp_test(HDSP_STATUS_OK == hdsp_fir_filter_shape(&filter, w, HDSP_FIR_LS_KAISER_75_8000_48000_LEN),
+              "Filter shape failed");
+    hdsp_test_vectors_equal_almost_double(filter.b, hdsp_fir_ls_kaiser_75_8000_48000, filter.b_len);
 
     // 2. Test interface
 
@@ -144,7 +171,7 @@ int main(int argc, char **argv) {
     hdsp_test(filter.design_method == HDSP_FILTER_DESIGN_METHOD_LEAST_SQUARES, "Wrong design method");
     fprintf(stderr, "b:\n");
     hdsp_test_output_vector_with_newline_double(filter.b, filter.b_len);
-    hdsp_test_vectors_equal_almost_double(filter.b, hdsp_fir_ls_kaiser_57_4000_48000, filter.b_len);
+    hdsp_test_vectors_equal_almost_double(filter.b, hdsp_fir_ls_57_4000_48000, filter.b_len);
 
     // Fs=48000, Wpass=8000
     hdsp_test(HDSP_STATUS_OK == hdsp_fir_filter_init_lowpass(&filter, HDSP_FIR_LS_KAISER_75_8000_48000_LEN, FS_HZ,
@@ -154,7 +181,7 @@ int main(int argc, char **argv) {
     hdsp_test(filter.design_method == HDSP_FILTER_DESIGN_METHOD_LEAST_SQUARES, "Wrong design method");
     fprintf(stderr, "b:\n");
     hdsp_test_output_vector_with_newline_double(filter.b, filter.b_len);
-    hdsp_test_vectors_equal_almost_double(filter.b, hdsp_fir_ls_kaiser_75_8000_48000, filter.b_len);
+    hdsp_test_vectors_equal_almost_double(filter.b, hdsp_fir_ls_75_8000_48000, filter.b_len);
 
     return 0;
 }

@@ -265,11 +265,11 @@ hdsp_status_t hdsp_fir_filter_init_lowpass_by_ls(hdsp_filter_t *filter, size_t n
     memset(filter, 0, sizeof(*filter));
 
     if (n == HDSP_FIR_LS_KAISER_57_4000_48000_LEN && fs_hz == 48000 && passband_freq_hz == 4000) {
-        memcpy(filter->b, hdsp_fir_ls_kaiser_57_4000_48000,
-               HDSP_FIR_LS_KAISER_57_4000_48000_LEN * sizeof(hdsp_fir_ls_kaiser_57_4000_48000[0]));
+        memcpy(filter->b, hdsp_fir_ls_57_4000_48000,
+               HDSP_FIR_LS_KAISER_57_4000_48000_LEN * sizeof(hdsp_fir_ls_57_4000_48000[0]));
     } else if (n == HDSP_FIR_LS_KAISER_75_8000_48000_LEN && fs_hz == 48000 && passband_freq_hz == 8000) {
-        memcpy(filter->b, hdsp_fir_ls_kaiser_75_8000_48000,
-               HDSP_FIR_LS_KAISER_75_8000_48000_LEN * sizeof(hdsp_fir_ls_kaiser_75_8000_48000[0]));
+        memcpy(filter->b, hdsp_fir_ls_75_8000_48000,
+               HDSP_FIR_LS_KAISER_75_8000_48000_LEN * sizeof(hdsp_fir_ls_75_8000_48000[0]));
     } else {
         return HDSP_STATUS_FALSE;
     }
