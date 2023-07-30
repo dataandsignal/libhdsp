@@ -55,9 +55,9 @@ int main(int argc, char **argv) {
 
     // Reference, using MATLAB's hamming():
     // hamming(3).'
-    double w3_ref[W3_LEN] = {0.08, 1, 0.08};
+    double w3_ref[W3_LEN] = {0.080000, 1, 0.080000};
     // hamming(4).'
-    double w4_ref[W4_LEN] = {0.08, 0.77, 0.77, 0.08};
+    double w4_ref[W4_LEN] = {0.080000, 0.770000, 0.770000, 0.080000};
     // hamming(256).'
     double w256_ref[W256_LEN] = {
             0.080000, 0.080140, 0.080558, 0.081256, 0.082232, 0.083487,0.085018,
