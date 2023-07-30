@@ -70,7 +70,7 @@ hdsp_status_t hdsp_upsample(int16_t *x, size_t x_len, int upsample_factor, int16
     return HDSP_STATUS_OK;
 }
 
-uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, int16_t *y)
+uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, double *h, uint16_t h_len, double *y)
 {
     int16_t t = 0, tau = 0;
     int16_t c_len = x_len + h_len - 1;
@@ -82,7 +82,7 @@ uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, 
 
     while (t < c_len) {
 
-        y[t] = 0;
+        y[t] = 0.0;
 
         // When x_len > h_len
 
@@ -95,9 +95,9 @@ uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, 
 
         for (tau = tau_min; tau <= tau_max; tau++) {
             int16_t x_v = x[tau];
-            int16_t h_v = h[t-tau];
+            double h_v = h[t-tau];
             y[t] += x_v * h_v;
-            fprintf(stderr, "-> t=%d,tau_min=%d,tau_max=%d\ttau=%d: x[%d]=%d h[%d]=%d y[%d]=%d\n", t, tau_min, tau_max, tau, tau, x_v, t-tau, h_v, t, y[t]);
+            fprintf(stderr, "-> t=%d,tau_min=%d,tau_max=%d\ttau=%d: x[%d]=%d h[%d]=%f y[%d]=%f\n", t, tau_min, tau_max, tau, tau, x_v, t-tau, h_v, t, y[t]);
         }
 
         t = t + 1;
@@ -106,8 +106,8 @@ uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, 
     return t;
 }
 
-uint16_t hdsp_conv(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, hdsp_conv_type_t type,
-                   int16_t *y, int32_t *idx_start, int32_t *idx_end)
+uint16_t hdsp_conv(int16_t *x, uint16_t x_len, double *h, uint16_t h_len, hdsp_conv_type_t type,
+                   double *y, int32_t *idx_start, int32_t *idx_end)
 {
     uint16_t n = 0;
 
@@ -344,9 +344,39 @@ hdsp_status_t hdsp_fir_filter_init_lowpass_kaiser_opt(hdsp_filter_t *filter, uin
     return HDSP_STATUS_OK;
 }
 
-hdsp_status_t hdsp_filter(int16_t *x, size_t x_len, hdsp_filter_t *fltr, double *y, size_t *y_len)
+hdsp_status_t hdsp_fir_filter(int16_t *x, size_t x_len, hdsp_filter_t *filter, double *y, size_t y_len)
 {
+    int32_t idx_start = 0;
+    int32_t idx_end = 0;
+    double *y_tmp = NULL;
+
+    if (!x || x_len == 0 || !filter || filter->b_len == 0 || !y || y_len < x_len) {
+        return HDSP_STATUS_FALSE;
+    }
+
+    y_tmp = malloc(sizeof(double)*(x_len + filter->b_len - 1));
+    if (!y_tmp) {
+        goto fail;
+    }
+    memset(y_tmp, 0, sizeof(double)*(x_len + filter->b_len - 1));
+
+    if (x_len + filter->b_len - 1 != hdsp_conv(x, x_len, filter->b, filter->b_len,
+                                               HDSP_CONV_TYPE_SAME, y_tmp, &idx_start, &idx_end)) {
+        goto fail;
+    }
+
+    memcpy(y, &y_tmp[idx_start], sizeof(y_tmp[0]) *(idx_end - idx_start + 1));
+    free(y_tmp);
+    y_tmp = NULL;
+
     return HDSP_STATUS_OK;
+
+fail:
+    if (y_tmp) {
+        free(y_tmp);
+        y_tmp = NULL;
+    }
+    return HDSP_STATUS_FALSE;
 }
 
 double hdsp_modified_bessel_1st_kind_zero(double x)

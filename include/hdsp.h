@@ -118,7 +118,7 @@ hdsp_status_t hdsp_upsample(int16_t *x, size_t x_len, int upsample_factor, int16
  *      y - (out) output, must point to a valid memory of at least sizeof(int16_t)*(x_len + h_len - 1) bytes
  * Returns the number of elements written to y (x_len + h_len - 1).
  */
-uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, int16_t *y);
+uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, double *h, uint16_t h_len, double *y);
 
 /**
  * Compute convolution of input signal x and filter h: x*h=Sum{x[tau]h[t-tau]}.
@@ -148,8 +148,8 @@ uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, 
  * element of convolution result for a required convolution type. In case of 'valid' convolution type a result vector
  * may be empty, which is signalled by idx_start == -1 and idx_end == -1.
  */
-uint16_t hdsp_conv(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, hdsp_conv_type_t type,
-                   int16_t *y, int32_t *idx_start, int32_t *idx_end);
+uint16_t hdsp_conv(int16_t *x, uint16_t x_len, double *h, uint16_t h_len, hdsp_conv_type_t type,
+                   double *y, int32_t *idx_start, int32_t *idx_end);
 
 /**
  * Create N-point symmetric Hamming window.
@@ -231,9 +231,10 @@ hdsp_status_t hdsp_fir_filter_shape(hdsp_filter_t *filter, double *w, uint16_t w
 hdsp_status_t hdsp_fir_filter_init_lowpass_kaiser_opt(hdsp_filter_t *filter, uint16_t fs_hz, uint16_t passband_freq_hz);
 
 /**
- * Filter frame x with filter.
+ * Zero-phase filter data x with FIR filter (compensates for a delay).
+ * y must point to a vector of same number of elements as x (or more).
  */
-hdsp_status_t hdsp_filter(int16_t *x, size_t x_len, hdsp_filter_t *fltr, double *y, size_t *y_len);
+hdsp_status_t hdsp_fir_filter(int16_t *x, size_t x_len, hdsp_filter_t *filter, double *y, size_t y_len);
 
 #define HDSP_FACTORIAL_MAX 40
 double hdsp_factorial[HDSP_FACTORIAL_MAX + 1] = {

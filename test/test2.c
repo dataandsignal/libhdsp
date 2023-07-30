@@ -45,27 +45,27 @@ int main(int argc, char **argv) {
 
     // Input
     int16_t x[X_LEN] = {0, 1, 2, 3, 4, 5, 6, 7};
-    int16_t h[H_LEN] = {0, 1, 2};
+    double h[H_LEN] = {0, 1, 2};
 
     // Output
-    int16_t y[X_LEN + H_LEN - 1] = {0};
+    double y[X_LEN + H_LEN - 1] = {0};
 
     // Reference, using MATLAB's conv:
     // x = 1 : 1 : 7
     // h = 0 : 1 : 2
     // conv(x,h,"full")
-    int16_t ref[X_LEN + H_LEN - 1] = {0, 0, 1, 4, 7, 10, 13, 16, 19, 14};
+    double ref[X_LEN + H_LEN - 1] = {0, 0, 1, 4, 7, 10, 13, 16, 19, 14};
 
     fprintf(stderr, "x:\n");
     hdsp_test_output_vector_with_newline(x,X_LEN);
     fprintf(stderr, "h:\n");
-    hdsp_test_output_vector_with_newline(h,H_LEN);
+    hdsp_test_output_vector_with_newline_double(h,H_LEN);
 
     hdsp_test(X_LEN + H_LEN - 1 == hdsp_conv_full(x, X_LEN, h, H_LEN, y), "It did not work");
     fprintf(stderr, "y:\n");
-    hdsp_test_output_vector_with_newline(y, X_LEN + H_LEN - 1);
+    hdsp_test_output_vector_with_newline_double(y, X_LEN + H_LEN - 1);
 
-    hdsp_test_vectors_equal(y, ref, X_LEN + H_LEN - 1);
+    hdsp_test_vectors_equal_double(y, ref, X_LEN + H_LEN - 1);
 
     return 0;
 }

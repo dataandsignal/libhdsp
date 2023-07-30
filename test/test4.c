@@ -45,11 +45,11 @@ int main(int argc, char **argv) {
 
     // Input
     int16_t x[X_LEN] = {0, 1, 2};
-    int16_t h[H_LEN] = {0, 1, 2, 3, 4, 5, 6, 7};
+    double h[H_LEN] = {0, 1, 2, 3, 4, 5, 6, 7};
 
     // Output
-    int16_t y[X_LEN + H_LEN - 1] = {0};
-    int16_t z[X_LEN + H_LEN - 1] = {0};
+    double y[X_LEN + H_LEN - 1] = {0};
+    double z[X_LEN + H_LEN - 1] = {0};
     int32_t idx_start = 0;
     int32_t idx_end = 0;
 
@@ -57,24 +57,24 @@ int main(int argc, char **argv) {
     // x = 0 : 1 : 2
     // h = 0 : 1 : 7
     // conv(x,h,"full")
-    int16_t ref_conv_full[X_LEN + H_LEN - 1] = {0, 0, 1, 4, 7, 10, 13, 16, 19, 14};
+    double ref_conv_full[X_LEN + H_LEN - 1] = {0, 0, 1, 4, 7, 10, 13, 16, 19, 14};
     // conv(x,h,"same")
-    int16_t ref_conv_same[X_LEN] = {7, 10, 13};
+    double ref_conv_same[X_LEN] = {7, 10, 13};
     // conv(x,h,"valid")
-    int16_t ref_conv_valid[] = {0};
+    double ref_conv_valid[] = {0};
 
     fprintf(stderr, "x:\n");
     hdsp_test_output_vector_with_newline(x,X_LEN);
     fprintf(stderr, "h:\n");
-    hdsp_test_output_vector_with_newline(h,H_LEN);
+    hdsp_test_output_vector_with_newline_double(h,H_LEN);
 
     // Test x*h 'full'
     hdsp_test(X_LEN + H_LEN - 1 == hdsp_conv(x, X_LEN, h, H_LEN, HDSP_CONV_TYPE_FULL,
                                              y, &idx_start, &idx_end), "Conv x*h 'full' did not work");
     fprintf(stderr, "y:\n");
-    hdsp_test_output_vector_with_newline(y, X_LEN + H_LEN - 1);
+    hdsp_test_output_vector_with_newline_double(y, X_LEN + H_LEN - 1);
 
-    hdsp_test_vectors_equal(y, ref_conv_full, X_LEN + H_LEN - 1);
+    hdsp_test_vectors_equal_double(y, ref_conv_full, X_LEN + H_LEN - 1);
     hdsp_test(idx_start == 0, "Wrong value for idx start");
     hdsp_test(idx_end == X_LEN + H_LEN - 2, "Wrong value for idx end");
 
@@ -82,18 +82,18 @@ int main(int argc, char **argv) {
     hdsp_test(X_LEN + H_LEN - 1 == hdsp_conv(x, X_LEN, h, H_LEN, HDSP_CONV_TYPE_SAME,
                                              y, &idx_start, &idx_end), "Conv x*h 'same' did not work");
     fprintf(stderr, "y:\n");
-    hdsp_test_output_vector_with_newline(y, X_LEN + H_LEN - 1);
+    hdsp_test_output_vector_with_newline_double(y, X_LEN + H_LEN - 1);
 
     hdsp_test(idx_start == 4, "Wrong value for idx start");
     hdsp_test(idx_end == 7, "Wrong value for idx end");
-    memcpy(z, &y[idx_start], sizeof(int16_t) *(idx_end - idx_start + 1));
-    hdsp_test_vectors_equal(z, ref_conv_same, idx_end - idx_start);
+    memcpy(z, &y[idx_start], sizeof(z[0]) *(idx_end - idx_start + 1));
+    hdsp_test_vectors_equal_double(z, ref_conv_same, idx_end - idx_start);
 
     // Test x*h 'valid'
     hdsp_test(X_LEN + H_LEN - 1 == hdsp_conv(x, X_LEN, h, H_LEN, HDSP_CONV_TYPE_VALID,
                                              y, &idx_start, &idx_end), "Conv x*h 'valid' did not work");
     fprintf(stderr, "y:\n");
-    hdsp_test_output_vector_with_newline(y, X_LEN + H_LEN - 1);
+    hdsp_test_output_vector_with_newline_double(y, X_LEN + H_LEN - 1);
 
     hdsp_test(idx_start == -1, "Wrong value for idx start");
     hdsp_test(idx_end == -1, "Wrong value for idx end");
