@@ -187,16 +187,16 @@ double hdsp_kaiser_beta(double attenuation_db)
             * (attenuation_db >= 21.0 && attenuation_db <= 50.0 ? 1 : 0);
 }
 
-void hdsp_design_kaiser_n_beta(uint16_t passband_freq, uint16_t fs, double stopband_attenuation_db, double passband_ripple_db,
+void hdsp_design_kaiser_n_beta(uint16_t passband_freq, uint16_t fs_hz, double stopband_attenuation_db, double passband_ripple_db,
                                uint16_t *n, double *beta)
 {
-    double passband_freq_normalized = (double) passband_freq / ((double)fs / 2.0);
+    double passband_freq_normalized = (double) passband_freq / ((double)fs_hz / 2.0);
     double stopband_attenuation_linear = HDSP_KAISER_FILTER_STOPBAND_ATTENUATION_DB_TO_LINEAR(stopband_attenuation_db);
     double passband_ripple_linear = HDSP_KAISER_FILTER_PASSBAND_RIPPLE_DB_TO_LINEAR(passband_ripple_db);
     double tw_percentage = -0.98 * HDSP_KAISER_FILTER_STEEPNES + 0.99;
     double tw = tw_percentage * (1.0 - passband_freq_normalized);
     double stopband_freq_normalized = passband_freq_normalized + tw;
-    double stopband_freq = stopband_freq_normalized * ((double)fs / 2.0);
+    double stopband_freq = stopband_freq_normalized * ((double)fs_hz / 2.0);
 
     double passband_freq_normalized_2pi = passband_freq_normalized / 2.0;
     double stopband_freq_normalized_2pi = stopband_freq_normalized / 2.0;
@@ -221,15 +221,16 @@ void hdsp_design_kaiser_n_beta(uint16_t passband_freq, uint16_t fs, double stopb
     }
 }
 
-double hdsp_sinc(double x, double fs_hz) {
-    if (fabs(x) < 1.0 / fs_hz) {
+double hdsp_sinc(double x, uint16_t fs_hz) {
+    if (fabs(x) < 1.0 / (double)fs_hz) {
         return 1.0;
     }
 
     return sin(M_PI * x) / (M_PI * x);
 }
 
-hdsp_status_t hdsp_fir_filter_init_lowpass(hdsp_filter_t *filter, size_t n, double fs_hz, double passband_freq_hz) {
+hdsp_status_t hdsp_fir_filter_init_lowpass_by_spectrum_sampling(hdsp_filter_t *filter, size_t n,
+                                                                uint16_t fs_hz, uint16_t passband_freq_hz) {
 
     int32_t k = 0;
     int32_t L2 = (n - 1) / 2;
@@ -237,6 +238,8 @@ hdsp_status_t hdsp_fir_filter_init_lowpass(hdsp_filter_t *filter, size_t n, doub
     if (!filter || (n > HDSP_FIR_FILTER_LEN_MAX) || (passband_freq_hz > fs_hz)) {
         return HDSP_STATUS_FALSE;
     }
+
+    memset(filter, 0, sizeof(*filter));
 
     while (k < n) {
         filter->b[k] = (2.0 * passband_freq_hz / (double)fs_hz)
@@ -247,7 +250,42 @@ hdsp_status_t hdsp_fir_filter_init_lowpass(hdsp_filter_t *filter, size_t n, doub
     filter->b_len = n;
     filter->passband_freq_hz = passband_freq_hz;
     filter->fs_hz = fs_hz;
+    filter->design_method = HDSP_FILTER_DESIGN_METHOD_SPECTRUM_SAMPLING;
 
+    return HDSP_STATUS_OK;
+}
+
+hdsp_status_t hdsp_fir_filter_init_lowpass_by_ls(hdsp_filter_t *filter, size_t n,
+                                                                uint16_t fs_hz, uint16_t passband_freq_hz) {
+    if (!filter || (n > HDSP_FIR_FILTER_LEN_MAX) || (passband_freq_hz > fs_hz)) {
+        fprintf(stderr, "Err1\n");
+        return HDSP_STATUS_FALSE;
+    }
+
+    memset(filter, 0, sizeof(*filter));
+
+    if (n == HDSP_FIR_LS_KAISER_57_4000_48000_LEN && fs_hz == 48000 && passband_freq_hz == 4000) {
+        memcpy(filter->b, hdsp_fir_ls_kaiser_57_4000_48000,
+               HDSP_FIR_LS_KAISER_57_4000_48000_LEN * sizeof(hdsp_fir_ls_kaiser_57_4000_48000[0]));
+    } else if (n == HDSP_FIR_LS_KAISER_75_8000_48000_LEN && fs_hz == 48000 && passband_freq_hz == 8000) {
+        memcpy(filter->b, hdsp_fir_ls_kaiser_75_8000_48000,
+               HDSP_FIR_LS_KAISER_75_8000_48000_LEN * sizeof(hdsp_fir_ls_kaiser_75_8000_48000[0]));
+    } else {
+        return HDSP_STATUS_FALSE;
+    }
+
+    filter->b_len = n;
+    filter->passband_freq_hz = passband_freq_hz;
+    filter->fs_hz = fs_hz;
+    filter->design_method = HDSP_FILTER_DESIGN_METHOD_LEAST_SQUARES;
+
+    return HDSP_STATUS_OK;
+}
+
+hdsp_status_t hdsp_fir_filter_init_lowpass(hdsp_filter_t *filter, size_t n,
+                                           uint16_t fs_hz, uint16_t passband_freq_hz,
+                                           hdsp_filter_design_method_t method)
+{
     return HDSP_STATUS_OK;
 }
 

@@ -68,6 +68,12 @@ enum hdsp_conv_type {
 };
 typedef enum hdsp_conv_type hdsp_conv_type_t;
 
+enum hdsp_filter_design_method {
+    HDSP_FILTER_DESIGN_METHOD_SPECTRUM_SAMPLING,
+    HDSP_FILTER_DESIGN_METHOD_LEAST_SQUARES
+};
+typedef enum hdsp_filter_design_method hdsp_filter_design_method_t;
+
 #define hdsp_min(x, y) ((x) < (y) ? (x) : (y))
 #define hdsp_max(x, y) ((x) < (y) ? (y) : (x))
 
@@ -84,8 +90,9 @@ struct hdsp_filter {
     size_t b_len;
     double w[HDSP_FIR_FILTER_LEN_MAX]; // window
     size_t w_len;
-    double passband_freq_hz; // Passband frequency in Hertz
-    double fs_hz; // Sampling rate in Hz
+    uint16_t passband_freq_hz; // Passband frequency in Hertz
+    uint16_t fs_hz; // Sampling rate in Hz
+    hdsp_filter_design_method_t design_method;
 };
 typedef struct hdsp_filter hdsp_filter_t;
 
@@ -118,6 +125,7 @@ uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, 
  * Convolution types:
  *  full - (HDSP_CONV_TYPE_FULL) full-length convolution, (x_len + h_len - 1) elements
  *  same - (HDSP_CONV_TYPE_SAME) central part of full-length convolution truncated to length of x
+ *          This implements zero-phase filtering (filter delay compensation).
  *  valid - (HDSP_CONV_TYPE_VALID) segment of full-length convolution elements, which have been computed without
  *          a need to zero-pad (missing) elements, i.e. only such elements for which computation all coefficients
  *          of filter h were multiplied by samples of x (none of the coefficients of h fallen outside of x)
@@ -180,13 +188,30 @@ void hdsp_design_kaiser_n_beta(uint16_t passband_freq, uint16_t fs, double stopb
 /**
  * Returns sinc(x) value.
  */
-double hdsp_sinc(double x, double fs_hz);
+double hdsp_sinc(double x, uint16_t fs_hz);
 
 /**
  * Initializes filter to Finite Impulse Response lowpass filter by sampling inverse of the spectrum
  * of perfect rectangle lowpass filter.
+ * Impulse response isn't windowed, use Hamming or Kaiser window to shape filter.
  */
-hdsp_status_t hdsp_fir_filter_init_lowpass(hdsp_filter_t *filter, size_t n, double fs_hz, double passband_freq_hz);
+hdsp_status_t hdsp_fir_filter_init_lowpass_by_spectrum_sampling(hdsp_filter_t *filter, size_t n,
+                                                                uint16_t fs_hz, uint16_t passband_freq_hz);
+
+/**
+ * Initializes filter to Finite Impulse Response lowpass filter by a least squares method.
+ * Impulse response isn't windowed, use Hamming or Kaiser window to shape filter.
+ */
+hdsp_status_t hdsp_fir_filter_init_lowpass_by_ls(hdsp_filter_t *filter, size_t n,
+                                                 uint16_t fs_hz, uint16_t passband_freq_hz);
+
+/**
+ * Initializes filter to Finite Impulse Response lowpass filter by a specified design method.
+ * Impulse response isn't windowed, use Hamming or Kaiser window to shape filter.
+ */
+hdsp_status_t hdsp_fir_filter_init_lowpass(hdsp_filter_t *filter, size_t n,
+                                           uint16_t fs_hz, uint16_t passband_freq_hz,
+                                           hdsp_filter_design_method_t method);
 
 /**
  * Filter frame x with filter.
@@ -217,6 +242,48 @@ double hdsp_factorial[HDSP_FACTORIAL_MAX + 1] = {
  * https://mathworld.wolfram.com/ModifiedBesselFunctionoftheFirstKind.html
  */
 double hdsp_modified_bessel_1st_kind_zero(double x);
+
+#define HDSP_FIR_LS_KAISER_57_4000_48000_LEN 57u
+double hdsp_fir_ls_kaiser_57_4000_48000[HDSP_FIR_LS_KAISER_57_4000_48000_LEN] = {
+        0.0002317719, 0.0002933296, 0.0000653322, -0.0005152687,
+        -0.0011996204, -0.0014443471, -0.0007086233, 0.0010787318,
+        0.0031880267, 0.0042290905, 0.0028736999, -0.0011307916,
+        -0.0062838011, -0.0096164325, -0.0081152050, -0.0007340415,
+        0.0101430054, 0.0189368961, 0.0192239944, 0.0074220577,
+        -0.0139930822, -0.0357312183, -0.0444435302, -0.0283134534,
+        0.0168563899, 0.0840521946, 0.1560909305, 0.2113680921,
+        0.2320833333, 0.2113680921, 0.1560909305, 0.0840521946,
+        0.0168563899, -0.0283134534, -0.0444435302, -0.0357312183,
+        -0.0139930822, 0.0074220577, 0.0192239944, 0.0189368961,
+        0.0101430054, -0.0007340415, -0.0081152050, -0.0096164325,
+        -0.0062838011, -0.0011307916, 0.0028736999, 0.0042290905,
+        0.0031880267, 0.0010787318, -0.0007086233, -0.0014443471,
+        -0.0011996204, -0.0005152687, 0.0000653322, 0.0002933296,
+        0.0002317719
+};
+
+#define HDSP_FIR_LS_KAISER_75_8000_48000_LEN 75u
+double hdsp_fir_ls_kaiser_75_8000_48000[HDSP_FIR_LS_KAISER_75_8000_48000_LEN] = {
+        0.0001314414, -0.0000946699, -0.0003771918, -0.0001777816,
+        0.0005110697, 0.0007632490, -0.0001520994, -0.0013277041,
+        -0.0009119127, 0.0011928743, 0.0023294453, 0.0002466303,
+        -0.0030619300, -0.0028634022, 0.0018347777, 0.0053608132,
+        0.0018948703, -0.0055752556, -0.0069812104, 0.0016853716,
+        0.0104324659, 0.0061577390, -0.0085634654, -0.0147862994,
+        -0.0007589469, 0.0185192198, 0.0158431490, -0.0114528143,
+        -0.0302037540, -0.0093372058, 0.0335644092, 0.0413488592,
+        -0.0135605853, -0.0765310018, -0.0493965138, 0.1039680895,
+        0.2974386077, 0.3856670000, 0.2974386077, 0.1039680895,
+        -0.0493965138, -0.0765310018, -0.0135605853, 0.0413488592,
+        0.0335644092, -0.0093372058, -0.0302037540, -0.0114528143,
+        0.0158431490, 0.0185192198, -0.0007589469, -0.0147862994,
+        -0.0085634654, 0.0061577390, 0.0104324659, 0.0016853716,
+        -0.0069812104, -0.0055752556, 0.0018948703, 0.0053608132,
+        0.0018347777, -0.0028634022, -0.0030619300, 0.0002466303,
+        0.0023294453, 0.0011928743, -0.0009119127, -0.0013277041,
+        -0.0001520994, 0.0007632490, 0.0005110697, -0.0001777816,
+        -0.0003771918, -0.0000946699, 0.0001314414
+};
 
 /* Tests */
 
