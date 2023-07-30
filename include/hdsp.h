@@ -55,12 +55,14 @@ extern "C" {
 
 #define HDSP_FIR_FILTER_LEN_MAX 4096
 #define HDSP_KAISER_FILTER_STOPBAND_ATTENUATION_DB 60
-#define HDSP_KAISER_FILTER_PASSBAND_RIPPLE 0.1
+#define HDSP_KAISER_FILTER_PASSBAND_RIPPLE_DB 0.1
 #define HDSP_KAISER_FILTER_STEEPNES 0.85
 #define HDSP_KAISER_FILTER_STOPBAND_ATTENUATION_DB_TO_LINEAR(x) pow(10.0,(double)(-x)/20.0)
 #define HDSP_KAISER_FILTER_PASSBAND_RIPPLE_DB_TO_LINEAR(x) \
     (pow(10.0, ((double)(x)/20.0)) - 1.0)/(pow(10.0,((double)(x)/20.0)) + 1.0)
 #define HDSP_KAISER_FILTER_BETA_DEFAULT 5.653260
+#define HDSP_FIR_LS_KAISER_57_4000_48000_LEN 57u
+#define HDSP_FIR_LS_KAISER_75_8000_48000_LEN 75u
 
 enum hdsp_conv_type {
     HDSP_CONV_TYPE_FULL,
@@ -217,6 +219,18 @@ hdsp_status_t hdsp_fir_filter_init_lowpass(hdsp_filter_t *filter, size_t n,
 hdsp_status_t hdsp_fir_filter_shape(hdsp_filter_t *filter, double *w, uint16_t w_len);
 
 /**
+ * Initializes filter to Finite Impulse Response lowpass filter by least squares design method.
+ * Impulse response is windowed with Kaiser window.
+ * Filter length (and Kaiser window length) and Kaiser window BETA parameter is designed for the filter
+ * to meet the spec:
+ *      HDSP_KAISER_FILTER_STOPBAND_ATTENUATION_DB 60
+ *      HDSP_KAISER_FILTER_PASSBAND_RIPPLE 0.1
+ *      HDSP_KAISER_FILTER_STEEPNES 0.85
+ * This filter gives better results than hdsp_fir_filter_init_lowpass() (which is not optimised).
+ */
+hdsp_status_t hdsp_fir_filter_init_lowpass_kaiser_opt(hdsp_filter_t *filter, uint16_t fs_hz, uint16_t passband_freq_hz);
+
+/**
  * Filter frame x with filter.
  */
 hdsp_status_t hdsp_filter(int16_t *x, size_t x_len, hdsp_filter_t *fltr, double *y, size_t *y_len);
@@ -246,7 +260,6 @@ double hdsp_factorial[HDSP_FACTORIAL_MAX + 1] = {
  */
 double hdsp_modified_bessel_1st_kind_zero(double x);
 
-#define HDSP_FIR_LS_KAISER_57_4000_48000_LEN 57u
 double hdsp_fir_ls_57_4000_48000[HDSP_FIR_LS_KAISER_57_4000_48000_LEN] = {
         0.0113680544, 0.0087507903, 0.0013115806, -0.0074163364,
         -0.0129434981, -0.0120838026, -0.0047224621, 0.0058555156,
@@ -282,7 +295,6 @@ double hdsp_fir_ls_kaiser_57_4000_48000[HDSP_FIR_LS_KAISER_57_4000_48000_LEN] = 
         0.0002317719
 };
 
-#define HDSP_FIR_LS_KAISER_75_8000_48000_LEN 75u
 double hdsp_fir_ls_75_8000_48000[HDSP_FIR_LS_KAISER_75_8000_48000_LEN] = {
         0.0064470000, -0.0031510000, -0.0090940000, -0.0032450000,
         0.0072950000, 0.0087370000, -0.0014250000, -0.0103550000,

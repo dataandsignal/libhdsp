@@ -258,7 +258,6 @@ hdsp_status_t hdsp_fir_filter_init_lowpass_by_spectrum_sampling(hdsp_filter_t *f
 hdsp_status_t hdsp_fir_filter_init_lowpass_by_ls(hdsp_filter_t *filter, size_t n,
                                                                 uint16_t fs_hz, uint16_t passband_freq_hz) {
     if (!filter || (n > HDSP_FIR_FILTER_LEN_MAX) || (passband_freq_hz > fs_hz)) {
-        fprintf(stderr, "Err1\n");
         return HDSP_STATUS_FALSE;
     }
 
@@ -307,6 +306,41 @@ hdsp_status_t hdsp_fir_filter_shape(hdsp_filter_t *filter, double *w, uint16_t w
         filter->b[k] *= w[k];
         k = k + 1;
     }
+    return HDSP_STATUS_OK;
+}
+
+hdsp_status_t hdsp_fir_filter_init_lowpass_kaiser_opt(hdsp_filter_t *filter, uint16_t fs_hz, uint16_t passband_freq_hz)
+{
+    uint16_t n = 0;
+    double beta = 0.0;
+    double w[HDSP_FIR_LS_KAISER_57_4000_48000_LEN + HDSP_FIR_LS_KAISER_75_8000_48000_LEN] = {0};
+
+    if (!filter || (passband_freq_hz > fs_hz)) {
+        return HDSP_STATUS_FALSE;
+    }
+
+    memset(filter, 0, sizeof(*filter));
+
+    if (fs_hz == 48000 && passband_freq_hz == 4000) {
+        hdsp_design_kaiser_n_beta(4000, 48000, HDSP_KAISER_FILTER_STOPBAND_ATTENUATION_DB, HDSP_KAISER_FILTER_PASSBAND_RIPPLE_DB, &n, &beta);
+        n = HDSP_FIR_LS_KAISER_57_4000_48000_LEN;
+        hdsp_kaiser_window(w, n, beta);
+    } else if (fs_hz == 48000 && passband_freq_hz == 8000) {
+        hdsp_design_kaiser_n_beta(8000, 48000, HDSP_KAISER_FILTER_STOPBAND_ATTENUATION_DB, HDSP_KAISER_FILTER_PASSBAND_RIPPLE_DB, &n, &beta);
+        n = HDSP_FIR_LS_KAISER_75_8000_48000_LEN;
+        hdsp_kaiser_window(w, n, beta);
+    } else {
+        return HDSP_STATUS_FALSE;
+    }
+
+    hdsp_kaiser_window(w, n, beta);
+    if (HDSP_STATUS_OK != hdsp_fir_filter_init_lowpass_by_ls(filter, n, fs_hz, passband_freq_hz)) {
+        return HDSP_STATUS_FALSE;
+    }
+    if (HDSP_STATUS_OK != hdsp_fir_filter_shape(filter, w, n)) {
+        return HDSP_STATUS_FALSE;
+    }
+
     return HDSP_STATUS_OK;
 }
 
