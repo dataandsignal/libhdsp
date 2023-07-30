@@ -64,11 +64,11 @@ int main(int argc, char **argv) {
 
     // Reference, using MATLAB's kaiser(3,10):
     // kaiser(3,10).'
-    double w3_ref[W3_LEN] = {0.00035515,1.00000000,0.00035515};
+    double w3_10_ref[W3_LEN] = {0.00035515,1.00000000,0.00035515};
     // kaiser(4,10).'
-    double w4_ref[W4_LEN] = {0.00035515,0.58181016,0.58181016,0.00035515};
+    double w4_10_ref[W4_LEN] = {0.00035515,0.58181016,0.58181016,0.00035515};
     // kaiser(74,10),'
-    double w74_ref[W74_LEN] = {
+    double w74_10_ref[W74_LEN] = {
             0.00035515,0.00102357,0.00215324,0.00391210,0.00649706,0.01013280,
             0.01506917,0.02157699,0.02994233,0.04045922,0.05342105,0.06911060,
             0.08778920,0.10968525,0.13498249,0.16380846,0.19622369,0.23221199,
@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
             0.02157699,0.01506917,0.01013280,0.00649706,0.00391210,0.00215324,
             0.00102357,0.00035515};
     // kaiser(75,10).'
-    double w75_ref[W75_LEN] = {
+    double w75_10_ref[W75_LEN] = {
             0.00035515,0.00101181,0.00211526,0.00382615,0.00633260,0.00984910,
             0.01461414,0.02088640,0.02893950,0.03905535,0.05151614,0.06659526,
             0.08454720,0.10559693,0.12992890,0.15767622,0.18891043,0.22363212,
@@ -120,25 +120,25 @@ int main(int argc, char **argv) {
     hdsp_kaiser_window(w3, W3_LEN, 10);
     fprintf(stderr, "N=3:\n");
     hdsp_test_output_vector_with_newline_double(w3, W3_LEN);
-    hdsp_test_vectors_equal_almost_double(w3, w3_ref, W3_LEN);
+    hdsp_test_vectors_equal_almost_double(w3, w3_10_ref, W3_LEN);
 
     // Test N=4
     hdsp_kaiser_window(w4, W4_LEN, 10);
     fprintf(stderr, "N=4:\n");
     hdsp_test_output_vector_with_newline_double(w4, W4_LEN);
-    hdsp_test_vectors_equal_almost_double(w4, w4_ref, W4_LEN);
+    hdsp_test_vectors_equal_almost_double(w4, w4_10_ref, W4_LEN);
 
     // Test N=74
     hdsp_kaiser_window(w74, W74_LEN, 10);
     fprintf(stderr, "N=74:\n");
     hdsp_test_output_vector_with_newline_double(w74, W74_LEN);
-    hdsp_test_vectors_equal_almost_double(w74, w74_ref, W74_LEN);
+    hdsp_test_vectors_equal_almost_double(w74, w74_10_ref, W74_LEN);
 
     // Test N=75
     hdsp_kaiser_window(w75, W75_LEN, 10);
     fprintf(stderr, "N=75:\n");
     hdsp_test_output_vector_with_newline_double(w75, W75_LEN);
-    hdsp_test_vectors_equal_almost_double(w75, w75_ref, W75_LEN);
+    hdsp_test_vectors_equal_almost_double(w75, w75_10_ref, W75_LEN);
 
     return 0;
 }

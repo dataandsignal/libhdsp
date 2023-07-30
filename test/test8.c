@@ -107,6 +107,18 @@ int main(int argc, char **argv) {
     hdsp_test_output_vector_with_newline_double(filter.b, filter.b_len);
     hdsp_test_vectors_equal_almost_double(filter.b, hdsp_fir_ls_kaiser_75_8000_48000, filter.b_len);
 
+    // Test lowpass windowed filter created by least squares method
+
+    // Fs=48000, Wpass=4000
+    hdsp_test(HDSP_STATUS_OK == hdsp_fir_filter_init_lowpass_by_ls(&filter, HDSP_FIR_LS_KAISER_57_4000_48000_LEN,
+                                                                   FS_HZ, 4000),
+              "Filter initialisation failed");
+
+    // Fs=48000, Wpass=8000
+    hdsp_test(HDSP_STATUS_OK == hdsp_fir_filter_init_lowpass_by_ls(&filter, HDSP_FIR_LS_KAISER_75_8000_48000_LEN,
+                                                                   FS_HZ, 8000),
+              "Filter initialisation failed");
+
     // 2. Test interface
 
     // Test lowpass unwindowed filter created by sampling the spectrum

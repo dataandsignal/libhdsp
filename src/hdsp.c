@@ -100,7 +100,7 @@ uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, 
             fprintf(stderr, "-> t=%d,tau_min=%d,tau_max=%d\ttau=%d: x[%d]=%d h[%d]=%d y[%d]=%d\n", t, tau_min, tau_max, tau, tau, x_v, t-tau, h_v, t, y[t]);
         }
 
-        t++;
+        t = t + 1;
     }
 
     return t;
@@ -154,7 +154,7 @@ void hdsp_hamming_window(double *w, uint16_t n)
     while (i < half) {
         w[i] = 0.54 - 0.46 * cos(2 * M_PI * ((double) i / (double) (n - 1)));
         w[n - 1 - i] = w[i];
-        i++;
+        i = i + 1;
     }
 }
 
@@ -176,7 +176,7 @@ void hdsp_kaiser_window(double *w, uint16_t n, double beta)
         w[i] = hdsp_modified_bessel_1st_kind_zero(beta *
                 sqrt(1 - ((2 * (double)(i) / (double)(n - 1)) - 1) * ((2 * (double)(i) / (double)(n - 1)) - 1))) / bes;
         w[n - 1 - i] = w[i];
-        i++;
+        i = i + 1;
     }
 }
 
@@ -244,7 +244,7 @@ hdsp_status_t hdsp_fir_filter_init_lowpass_by_spectrum_sampling(hdsp_filter_t *f
     while (k < n) {
         filter->b[k] = (2.0 * passband_freq_hz / (double)fs_hz)
                 * hdsp_sinc(2.0 * passband_freq_hz * (k - L2) / (double)fs_hz, fs_hz);
-        k++;
+        k = k + 1;
     }
 
     filter->b_len = n;
@@ -293,6 +293,21 @@ hdsp_status_t hdsp_fir_filter_init_lowpass(hdsp_filter_t *filter, size_t n,
         default:
             return hdsp_fir_filter_init_lowpass_by_spectrum_sampling(filter, n, fs_hz, passband_freq_hz);
     }
+}
+
+hdsp_status_t hdsp_fir_filter_shape(hdsp_filter_t *filter, double *w, uint16_t w_len)
+{
+    int32_t k = 0;
+
+    if (!filter || !w || filter->b_len != w_len) {
+        return HDSP_STATUS_FALSE;
+    }
+
+    while (k < w_len) {
+        filter->b[k] *= w[k];
+        k = k + 1;
+    }
+    return HDSP_STATUS_OK;
 }
 
 hdsp_status_t hdsp_filter(int16_t *x, size_t x_len, hdsp_filter_t *fltr, double *y, size_t *y_len)

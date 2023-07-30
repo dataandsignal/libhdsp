@@ -210,6 +210,10 @@ hdsp_status_t hdsp_fir_filter_init_lowpass_by_ls(hdsp_filter_t *filter, size_t n
 hdsp_status_t hdsp_fir_filter_init_lowpass(hdsp_filter_t *filter, size_t n,
                                            uint16_t fs_hz, uint16_t passband_freq_hz,
                                            hdsp_filter_design_method_t method);
+/**
+ * Apply a window to a FIR filter.
+ */
+hdsp_status_t hdsp_fir_filter_shape(hdsp_filter_t *filter, double *w, uint16_t w_len);
 
 /**
  * Filter frame x with filter.
