@@ -71,6 +71,8 @@ int main(int argc, char **argv) {
     double beta = 0.0;
 
 
+    // 1. Test implementation methods
+
     // Test lowpass unwindowed filter created by sampling the spectrum
     hdsp_test(HDSP_STATUS_OK == hdsp_fir_filter_init_lowpass_by_spectrum_sampling(&filter, NUMBER_OF_POINTS,
                                                                                   FS_HZ, PASSBAND_FREQ_HZ),
@@ -98,6 +100,43 @@ int main(int argc, char **argv) {
     // Fs=48000, Wpass=8000
     hdsp_test(HDSP_STATUS_OK == hdsp_fir_filter_init_lowpass_by_ls(&filter, HDSP_FIR_LS_KAISER_75_8000_48000_LEN,
                                                                    FS_HZ, 8000),
+              "Filter initialisation failed");
+    hdsp_test(filter.b_len == HDSP_FIR_LS_KAISER_75_8000_48000_LEN, "Wrong filter length");
+    hdsp_test(filter.design_method == HDSP_FILTER_DESIGN_METHOD_LEAST_SQUARES, "Wrong design method");
+    fprintf(stderr, "b:\n");
+    hdsp_test_output_vector_with_newline_double(filter.b, filter.b_len);
+    hdsp_test_vectors_equal_almost_double(filter.b, hdsp_fir_ls_kaiser_75_8000_48000, filter.b_len);
+
+    // 2. Test interface
+
+    // Test lowpass unwindowed filter created by sampling the spectrum
+    hdsp_test(HDSP_STATUS_OK == hdsp_fir_filter_init_lowpass(&filter, NUMBER_OF_POINTS, FS_HZ, PASSBAND_FREQ_HZ,
+                                                             HDSP_FILTER_DESIGN_METHOD_SPECTRUM_SAMPLING),
+              "Filter initialisation failed");
+    hdsp_test(filter.b_len == NUMBER_OF_POINTS, "Wrong filter length");
+    hdsp_test(filter.design_method == HDSP_FILTER_DESIGN_METHOD_SPECTRUM_SAMPLING, "Wrong design method");
+    fprintf(stderr, "b:\n");
+    hdsp_test_output_vector_with_newline_double(filter.b, filter.b_len);
+    hdsp_test_vectors_equal_almost_double(filter.b, filter_ref, NUMBER_OF_POINTS);
+
+    // Test lowpass unwindowed filter created by least squares method
+    hdsp_test(HDSP_STATUS_FALSE == hdsp_fir_filter_init_lowpass(&filter, 256, FS_HZ, PASSBAND_FREQ_HZ,
+                                                                      HDSP_FILTER_DESIGN_METHOD_LEAST_SQUARES),
+              "Filter initialisation should fail");
+
+    // Fs=48000, Wpass=4000
+    hdsp_test(HDSP_STATUS_OK == hdsp_fir_filter_init_lowpass(&filter, HDSP_FIR_LS_KAISER_57_4000_48000_LEN, FS_HZ,
+                                                                   4000, HDSP_FILTER_DESIGN_METHOD_LEAST_SQUARES),
+              "Filter initialisation failed");
+    hdsp_test(filter.b_len == HDSP_FIR_LS_KAISER_57_4000_48000_LEN, "Wrong filter length");
+    hdsp_test(filter.design_method == HDSP_FILTER_DESIGN_METHOD_LEAST_SQUARES, "Wrong design method");
+    fprintf(stderr, "b:\n");
+    hdsp_test_output_vector_with_newline_double(filter.b, filter.b_len);
+    hdsp_test_vectors_equal_almost_double(filter.b, hdsp_fir_ls_kaiser_57_4000_48000, filter.b_len);
+
+    // Fs=48000, Wpass=8000
+    hdsp_test(HDSP_STATUS_OK == hdsp_fir_filter_init_lowpass(&filter, HDSP_FIR_LS_KAISER_75_8000_48000_LEN, FS_HZ,
+                                                                   8000, HDSP_FILTER_DESIGN_METHOD_LEAST_SQUARES),
               "Filter initialisation failed");
     hdsp_test(filter.b_len == HDSP_FIR_LS_KAISER_75_8000_48000_LEN, "Wrong filter length");
     hdsp_test(filter.design_method == HDSP_FILTER_DESIGN_METHOD_LEAST_SQUARES, "Wrong design method");

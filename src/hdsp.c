@@ -286,7 +286,13 @@ hdsp_status_t hdsp_fir_filter_init_lowpass(hdsp_filter_t *filter, size_t n,
                                            uint16_t fs_hz, uint16_t passband_freq_hz,
                                            hdsp_filter_design_method_t method)
 {
-    return HDSP_STATUS_OK;
+    switch (method) {
+        case HDSP_FILTER_DESIGN_METHOD_LEAST_SQUARES:
+            return hdsp_fir_filter_init_lowpass_by_ls(filter, n, fs_hz, passband_freq_hz);
+        case HDSP_FILTER_DESIGN_METHOD_SPECTRUM_SAMPLING:
+        default:
+            return hdsp_fir_filter_init_lowpass_by_spectrum_sampling(filter, n, fs_hz, passband_freq_hz);
+    }
 }
 
 hdsp_status_t hdsp_filter(int16_t *x, size_t x_len, hdsp_filter_t *fltr, double *y, size_t *y_len)
