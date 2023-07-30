@@ -88,8 +88,6 @@ struct hdsp_filter {
     size_t a_len;
     double b[HDSP_FIR_FILTER_LEN_MAX]; // denominator
     size_t b_len;
-    double w[HDSP_FIR_FILTER_LEN_MAX]; // window
-    size_t w_len;
     uint16_t passband_freq_hz; // Passband frequency in Hertz
     uint16_t fs_hz; // Sampling rate in Hz
     hdsp_filter_design_method_t design_method;
@@ -152,14 +150,14 @@ uint16_t hdsp_conv(int16_t *x, uint16_t x_len, int16_t *h, uint16_t h_len, hdsp_
 
 /**
  * Create N-point symmetric Hamming window.
- *      y - (out) result (must point to a valid memory of at least sizeof(double)*n bytes
+ *      w - (out) result (must point to a valid memory of at least sizeof(double)*n bytes
  *      n - (in) number of points
  */
 void hdsp_hamming_window(double *w, uint16_t n);
 
 /**
  * Create N-point symmetric Kaiser window.
- *      y - (out) result (must point to a valid memory of at least sizeof(double)*n bytes
+ *      w - (out) result (must point to a valid memory of at least sizeof(double)*n bytes
  *      n - (in) number of points
  *      beta - beta coefficient that determines the shape of the Kaiser window. In the frequency domain,
  *      it determines the trade-off between main-lobe width and side lobe level
