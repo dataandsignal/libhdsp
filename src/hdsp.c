@@ -91,13 +91,18 @@ uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, double *h, uint16_t h_len, d
         tau_min = hdsp_max(tau_min, t - (h_len - 1));
         tau_max = hdsp_min(tau_max, x_len - 1);
 
-        fprintf(stderr, "t,tau_min,tau_max: %d/%d/%d\n", t, tau_min, tau_max);
+        if (t < 2) {
+            fprintf(stderr, "t,tau_min,tau_max: %d/%d/%d\n", t, tau_min, tau_max);
+        }
 
         for (tau = tau_min; tau <= tau_max; tau++) {
             int16_t x_v = x[tau];
             double h_v = h[t-tau];
             y[t] += x_v * h_v;
-            fprintf(stderr, "-> t=%d,tau_min=%d,tau_max=%d\ttau=%d: x[%d]=%d h[%d]=%f y[%d]=%f\n", t, tau_min, tau_max, tau, tau, x_v, t-tau, h_v, t, y[t]);
+            if (t < 2) {
+                fprintf(stderr, "-> t=%d,tau_min=%d,tau_max=%d\ttau=%d: x[%d]=%d h[%d]=%f y[%d]=%f\n", t, tau_min,
+                        tau_max, tau, tau, x_v, t - tau, h_v, t, y[t]);
+            }
         }
 
         t = t + 1;
@@ -365,7 +370,8 @@ hdsp_status_t hdsp_fir_filter(int16_t *x, size_t x_len, hdsp_filter_t *filter, d
         goto fail;
     }
 
-    memcpy(y, &y_tmp[idx_start], sizeof(y_tmp[0]) *(idx_end - idx_start + 1));
+    memcpy(y, &y_tmp[idx_start], sizeof(y_tmp[0]) *(idx_end - idx_start));
+
     free(y_tmp);
     y_tmp = NULL;
 

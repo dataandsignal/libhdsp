@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
 
     hdsp_test(idx_start == 1, "Wrong value for idx start");
     hdsp_test(idx_end == 4, "Wrong value for idx end");
-    memcpy(z, &y[idx_start], sizeof(z[0]) *(idx_end - idx_start + 1));
+    memcpy(z, &y[idx_start], sizeof(z[0]) *(idx_end - idx_start));
     hdsp_test_vectors_equal_double(z, ref_conv_same, idx_end - idx_start);
 
     // Test x*h 'valid'
