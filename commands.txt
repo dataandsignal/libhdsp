@@ -1,0 +1,2 @@
+./hdsptool upsample test/noisy8khz.raw 8000 test/noisy8khz_to_48000_out.raw
+./hdsptool upsample test/noisy16khz.raw 16000 test/noisy16khz_to_48000_out.raw
