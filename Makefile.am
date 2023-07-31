@@ -9,9 +9,9 @@ libhdsp_la_LDFLAGS = -version-info 1:0:0
 
 #LIBS += -lhdsp
 
-bin_PROGRAMS = lhdsptool
-lhdsptool_SOURCES = test/hdsptool.c
-lhdsptool_LDADD = libhdsp.la
+bin_PROGRAMS = hdsptool
+hdsptool_SOURCES = test/hdsptool.c
+hdsptool_LDADD = libhdsp.la
 
 check_PROGRAMS = test1 test2 test3 test4 test5 test6 test7 test8
 TESTS = $(check_PROGRAMS)

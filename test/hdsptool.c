@@ -37,7 +37,96 @@
 
 #include "hdsp.h"
 
-int main(int args, char **argv) {
-    printf("Hi\n");
+#define PROGRAM_NAME argv[0]
+#define TARGET_SAMPLE_RATE 48000
+
+static void usage(const char *name) {
+    if (name == NULL)
+        return;
+
+    fprintf(stderr, "\nusage:\t %s upsample <input file raw> <input file sample rate> <output file upsampled raw>\n\n", name);
+}
+
+int main(int argc, char **argv) {
+
+    const char *cmd = NULL;
+    const char *f_in_name = NULL, *f_out_name = NULL;
+    int sample_rate_in = 0;
+    FILE *f_in = NULL, *f_out = NULL;
+    size_t n = 0, n_total = 0;
+    int16_t frame_in[TARGET_SAMPLE_RATE] = {0};
+    double frame_out[TARGET_SAMPLE_RATE] = {0};
+    int k = 0;
+    hdsp_filter_t filter = {0};
+
+    if (argc != 5) {
+        usage(PROGRAM_NAME);
+        exit(EXIT_FAILURE);
+    }
+
+    cmd = argv[1];
+    if (strcmp(cmd, "upsample") != 0) {
+        usage(PROGRAM_NAME);
+        exit(EXIT_FAILURE);
+    }
+
+    f_in_name = argv[2];
+    f_out_name = argv[4];
+    sample_rate_in = atoi(argv[3]);
+
+    f_in = fopen(f_in_name, "rb");
+    f_out = fopen(f_out_name, "wb");
+
+    if (!f_in || !f_out) {
+        fprintf(stderr, "Cannot open files\n");
+        goto fail;
+    }
+
+    if (sample_rate_in != 8000 && sample_rate_in != 16000) {
+        fprintf(stderr, "Only 8000 and 16000 sampling rate is supported\n");
+        goto fail;
+    }
+
+    if (HDSP_STATUS_OK != hdsp_fir_filter_init_lowpass_kaiser_opt(&filter, 48000, sample_rate_in / 2)) {
+        fprintf(stderr, "Failed to create filter\n");
+        goto fail;
+    }
+
+    while (sample_rate_in == (n = fread(frame_in, sizeof(int16_t), sample_rate_in, f_in))) {
+        k = k + 1;
+        n_total = n_total + n;
+
+        // process frame_in
+        if (HDSP_STATUS_OK != hdsp_fir_filter(frame_in, sample_rate_in, &filter, frame_out, sample_rate_in)) {
+            fprintf(stderr, "Failed to filter\n");
+            goto fail;
+        }
+
+        int k = 0;
+        int16_t tmp[TARGET_SAMPLE_RATE] = {0};
+        while (k < sample_rate_in) {
+            tmp[k] = (int16_t) frame_out[k];
+            k = k + 1;
+        }
+
+        // write
+        if (sample_rate_in < fwrite(tmp, sizeof(int16_t), sample_rate_in, f_out)) {
+            fprintf(stderr, "Failed to write\n");
+            goto fail;
+        }
+
+        printf("Frame %d (bytes total: %zu)\n", k, n_total * sizeof(int16_t));
+    }
+
+    printf("Done. (frames: %d, bytes total: %zu)\n", k, n_total * sizeof(int16_t));
     return 0;
+
+fail:
+    if (f_in) {
+        fclose(f_in);
+    }
+    if (f_out) {
+        fclose(f_out);
+    }
+    exit(EXIT_FAILURE);
 }
