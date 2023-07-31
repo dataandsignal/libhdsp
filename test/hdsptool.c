@@ -58,6 +58,7 @@ int main(int argc, char **argv) {
     double frame_out[TARGET_SAMPLE_RATE] = {0};
     int k = 0;
     hdsp_filter_t filter = {0};
+    int upsample_factor = 0;
 
     if (argc != 5) {
         usage(PROGRAM_NAME);
@@ -73,6 +74,7 @@ int main(int argc, char **argv) {
     f_in_name = argv[2];
     f_out_name = argv[4];
     sample_rate_in = atoi(argv[3]);
+    upsample_factor = TARGET_SAMPLE_RATE / sample_rate_in;
 
     f_in = fopen(f_in_name, "rb");
     f_out = fopen(f_out_name, "wb");
@@ -93,24 +95,30 @@ int main(int argc, char **argv) {
     }
 
     while (sample_rate_in == (n = fread(frame_in, sizeof(int16_t), sample_rate_in, f_in))) {
+        int m = 0;
+        int16_t buffer[TARGET_SAMPLE_RATE] = {0};
+
         k = k + 1;
         n_total = n_total + n;
 
         // process frame_in
-        if (HDSP_STATUS_OK != hdsp_fir_filter(frame_in, sample_rate_in, &filter, frame_out, sample_rate_in)) {
+        if (HDSP_STATUS_OK != hdsp_upsample(frame_in, sample_rate_in, upsample_factor, buffer, TARGET_SAMPLE_RATE)) {
+            fprintf(stderr, "Failed to upsample\n");
+            goto fail;
+        }
+
+        if (HDSP_STATUS_OK != hdsp_fir_filter(buffer, TARGET_SAMPLE_RATE, &filter, frame_out, TARGET_SAMPLE_RATE)) {
             fprintf(stderr, "Failed to filter\n");
             goto fail;
         }
 
-        int k = 0;
-        int16_t tmp[TARGET_SAMPLE_RATE] = {0};
-        while (k < sample_rate_in) {
-            tmp[k] = (int16_t) frame_out[k];
-            k = k + 1;
+        while (m < TARGET_SAMPLE_RATE) {
+            buffer[m] = (int16_t) frame_out[m];
+            m = m + 1;
         }
 
         // write
-        if (sample_rate_in < fwrite(tmp, sizeof(int16_t), sample_rate_in, f_out)) {
+        if (TARGET_SAMPLE_RATE < fwrite(buffer, sizeof(int16_t), TARGET_SAMPLE_RATE, f_out)) {
             fprintf(stderr, "Failed to write\n");
             goto fail;
         }

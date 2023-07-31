@@ -72,9 +72,9 @@ hdsp_status_t hdsp_upsample(int16_t *x, size_t x_len, int upsample_factor, int16
 
 uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, double *h, uint16_t h_len, double *y)
 {
-    int16_t t = 0, tau = 0;
-    int16_t c_len = x_len + h_len - 1;
-    int16_t tau_min = 0, tau_max = 0;
+    uint32_t t = 0, tau = 0;
+    uint32_t c_len = x_len + h_len - 1;
+    uint32_t tau_min = 0, tau_max = 0;
 
     if (!x || !h || !y || x_len < 1 || h_len < 1) {
         return 0;
@@ -92,7 +92,7 @@ uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, double *h, uint16_t h_len, d
         tau_max = hdsp_min(tau_max, x_len - 1);
 
         if (t < 2) {
-            fprintf(stderr, "t,tau_min,tau_max: %d/%d/%d\n", t, tau_min, tau_max);
+            fprintf(stderr, "t,tau_min,tau_max: %u/%u/%u\n", t, tau_min, tau_max);
         }
 
         for (tau = tau_min; tau <= tau_max; tau++) {
@@ -100,14 +100,14 @@ uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, double *h, uint16_t h_len, d
             double h_v = h[t-tau];
             y[t] += x_v * h_v;
             if (t < 2) {
-                fprintf(stderr, "-> t=%d,tau_min=%d,tau_max=%d\ttau=%d: x[%d]=%d h[%d]=%f y[%d]=%f\n", t, tau_min,
+                fprintf(stderr, "-> t=%u,tau_min=%u,tau_max=%u\ttau=%u: x[%u]=%d h[%u]=%f y[%u]=%f\n", t, tau_min,
                         tau_max, tau, tau, x_v, t - tau, h_v, t, y[t]);
             }
         }
 
         t = t + 1;
     }
-
+    printf("E??? t=%u,%u,%u,%u,%u\n",t,INT16_MAX,x_len,h_len,x_len + h_len - 1);
     return t;
 }
 
@@ -356,17 +356,20 @@ hdsp_status_t hdsp_fir_filter(int16_t *x, size_t x_len, hdsp_filter_t *filter, d
     double *y_tmp = NULL;
 
     if (!x || x_len == 0 || !filter || filter->b_len == 0 || !y || y_len < x_len) {
+        printf("E1\n");
         return HDSP_STATUS_FALSE;
     }
 
     y_tmp = malloc(sizeof(double)*(x_len + filter->b_len - 1));
     if (!y_tmp) {
+        printf("E2\n");
         goto fail;
     }
     memset(y_tmp, 0, sizeof(double)*(x_len + filter->b_len - 1));
 
     if (x_len + filter->b_len - 1 != hdsp_conv(x, x_len, filter->b, filter->b_len,
                                                HDSP_CONV_TYPE_SAME, y_tmp, &idx_start, &idx_end)) {
+        printf("E3\n");
         goto fail;
     }
 
