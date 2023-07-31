@@ -7,7 +7,7 @@ libhdsp_la_SOURCES = src/hdsp.c
 include_HEADERS = include/hdsp.h
 libhdsp_la_LDFLAGS = -version-info 1:0:0
 
-#LIBS += -lhdsp
+LIBS += -lm
 
 bin_PROGRAMS = hdsptool
 hdsptool_SOURCES = test/hdsptool.c
