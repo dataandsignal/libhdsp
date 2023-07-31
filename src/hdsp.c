@@ -70,6 +70,7 @@ hdsp_status_t hdsp_upsample(int16_t *x, size_t x_len, int upsample_factor, int16
     return HDSP_STATUS_OK;
 }
 
+#define DEBUG 0
 uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, double *h, uint16_t h_len, double *y)
 {
     uint32_t t = 0, tau = 0;
@@ -86,12 +87,12 @@ uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, double *h, uint16_t h_len, d
 
         // When x_len > h_len
 
-        tau_min = (t < h_len - 1) ? 0 : t - (h_len - 1);
+        tau_min = (t < h_len - 1) ? 0 : (t - (h_len - 1));
         tau_max = (t < h_len - 1) ? hdsp_min(x_len - 1, t) : t;
-        tau_min = hdsp_max(tau_min, t - (h_len - 1));
+
         tau_max = hdsp_min(tau_max, x_len - 1);
 
-        if (t < 2) {
+        if (DEBUG) {
             fprintf(stderr, "t,tau_min,tau_max: %u/%u/%u\n", t, tau_min, tau_max);
         }
 
@@ -99,7 +100,7 @@ uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, double *h, uint16_t h_len, d
             int16_t x_v = x[tau];
             double h_v = h[t-tau];
             y[t] += x_v * h_v;
-            if (t < 2) {
+            if (DEBUG) {
                 fprintf(stderr, "-> t=%u,tau_min=%u,tau_max=%u\ttau=%u: x[%u]=%d h[%u]=%f y[%u]=%f\n", t, tau_min,
                         tau_max, tau, tau, x_v, t - tau, h_v, t, y[t]);
             }
@@ -107,7 +108,7 @@ uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, double *h, uint16_t h_len, d
 
         t = t + 1;
     }
-    printf("E??? t=%u,%u,%u,%u,%u\n",t,INT16_MAX,x_len,h_len,x_len + h_len - 1);
+
     return t;
 }
 
