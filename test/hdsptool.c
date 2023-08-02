@@ -52,10 +52,13 @@ int main(int argc, char **argv) {
     const char *cmd = NULL;
     const char *f_in_name = NULL, *f_out_name = NULL;
     int sample_rate_in = 0;
-    FILE *f_in = NULL, *f_out = NULL;
+    FILE *f_in = NULL;
+    FILE *f_out_x = NULL, *f_out_x_upsampled = NULL,
+        *f_out_x_upsampled_filtered = NULL, *f_out_x_upsampled_filtered_downsampled = NULL;
     size_t n = 0, n_total = 0;
     int16_t frame_in[TARGET_SAMPLE_RATE] = {0};
     double frame_out[TARGET_SAMPLE_RATE] = {0};
+    double frame_out_downsampled[TARGET_SAMPLE_RATE] = {0};
     int k = 0;
     hdsp_filter_t filter = {0};
     int upsample_factor = 0;
@@ -77,9 +80,12 @@ int main(int argc, char **argv) {
     upsample_factor = TARGET_SAMPLE_RATE / sample_rate_in;
 
     f_in = fopen(f_in_name, "rb");
-    f_out = fopen(f_out_name, "wb");
+    f_out_x = fopen("x.raw", "wb");
+    f_out_x_upsampled = fopen("x_upsampled.raw", "wb");
+    f_out_x_upsampled_filtered = fopen("x_upsampled_filtered.raw", "wb");
+    f_out_x_upsampled_filtered_downsampled = fopen("x_upsampled_filtered_downsampled.raw", "wb");
 
-    if (!f_in || !f_out) {
+    if (!f_in || !f_out_x || !f_out_x_upsampled || !f_out_x_upsampled_filtered || !f_out_x_upsampled_filtered_downsampled) {
         fprintf(stderr, "Cannot open files\n");
         goto fail;
     }
@@ -101,9 +107,21 @@ int main(int argc, char **argv) {
         k = k + 1;
         n_total = n_total + n;
 
+        // write input
+        if (sample_rate_in < fwrite(frame_in, sizeof(int16_t), sample_rate_in, f_out_x)) {
+            fprintf(stderr, "Failed to write x (input)\n");
+            goto fail;
+        }
+
         // process frame_in
-        if (HDSP_STATUS_OK != hdsp_upsample(frame_in, sample_rate_in, upsample_factor, buffer, TARGET_SAMPLE_RATE)) {
+        if (HDSP_STATUS_OK != hdsp_upsample_int16(frame_in, sample_rate_in, upsample_factor, buffer, TARGET_SAMPLE_RATE)) {
             fprintf(stderr, "Failed to upsample\n");
+            goto fail;
+        }
+
+        // write upsampled
+        if (TARGET_SAMPLE_RATE < fwrite(buffer, sizeof(int16_t), TARGET_SAMPLE_RATE, f_out_x_upsampled)) {
+            fprintf(stderr, "Failed to write\n");
             goto fail;
         }
 
@@ -112,13 +130,31 @@ int main(int argc, char **argv) {
             goto fail;
         }
 
+        m = 0;
         while (m < TARGET_SAMPLE_RATE) {
             buffer[m] = (int16_t) frame_out[m];
             m = m + 1;
         }
 
-        // write
-        if (TARGET_SAMPLE_RATE < fwrite(buffer, sizeof(int16_t), TARGET_SAMPLE_RATE, f_out)) {
+        // write upsampled, filtered
+        if (TARGET_SAMPLE_RATE < fwrite(buffer, sizeof(int16_t), TARGET_SAMPLE_RATE, f_out_x_upsampled_filtered)) {
+            fprintf(stderr, "Failed to write\n");
+            goto fail;
+        }
+
+        if (HDSP_STATUS_OK != hdsp_downsample_double(frame_out, TARGET_SAMPLE_RATE, upsample_factor, frame_out_downsampled, sample_rate_in)) {
+            fprintf(stderr, "Failed to downsample\n");
+            goto fail;
+        }
+
+        m = 0;
+        while (m < sample_rate_in) {
+            buffer[m] = (int16_t) frame_out_downsampled[m];
+            m = m + 1;
+        }
+
+        // write upsampled, filtered, downsampled
+        if (TARGET_SAMPLE_RATE < fwrite(buffer, sizeof(int16_t), sample_rate_in, f_out_x_upsampled_filtered_downsampled)) {
             fprintf(stderr, "Failed to write\n");
             goto fail;
         }
@@ -133,8 +169,17 @@ fail:
     if (f_in) {
         fclose(f_in);
     }
-    if (f_out) {
-        fclose(f_out);
+    if (f_out_x) {
+        fclose(f_out_x);
+    }
+    if (f_out_x_upsampled) {
+        fclose(f_out_x_upsampled);
+    }
+    if (f_out_x_upsampled_filtered) {
+        fclose(f_out_x_upsampled_filtered);
+    }
+    if (f_out_x_upsampled_filtered_downsampled) {
+        fclose(f_out_x_upsampled_filtered_downsampled);
     }
     exit(EXIT_FAILURE);
 }

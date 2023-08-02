@@ -106,7 +106,11 @@ typedef struct hdsp_filter hdsp_filter_t;
  *      y_len - (in) upsampled frame's length in samples, should be x_len*upsample_factor
  * Returns HDSP_STATUS_OK on success, HDSP_STATUS_FALSE on error.
  */
-hdsp_status_t hdsp_upsample(int16_t *x, size_t x_len, int upsample_factor, int16_t *y, size_t y_len);
+hdsp_status_t hdsp_upsample_int16(int16_t *x, size_t x_len, int upsample_factor, int16_t *y, size_t y_len);
+
+
+hdsp_status_t hdsp_downsample_int16(int16_t *x, size_t x_len, int downsample_factor, int16_t *y, size_t y_len);
+hdsp_status_t hdsp_downsample_double(double *x, size_t x_len, int downsample_factor, double *y, size_t y_len);
 
 /**
  * Compute full-length convolution of input signal x and filter h: x*h=Sum{x[tau]h[t-tau]}.

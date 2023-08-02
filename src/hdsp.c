@@ -37,7 +37,7 @@
 
 #include "hdsp.h"
 
-hdsp_status_t hdsp_upsample(int16_t *x, size_t x_len, int upsample_factor, int16_t *y, size_t y_len)
+hdsp_status_t hdsp_upsample_int16(int16_t *x, size_t x_len, int upsample_factor, int16_t *y, size_t y_len)
 {
     if (!x || x_len < 1 || upsample_factor < 1 || !y || y_len < 1) {
         return HDSP_STATUS_FALSE;
@@ -70,6 +70,60 @@ hdsp_status_t hdsp_upsample(int16_t *x, size_t x_len, int upsample_factor, int16
     return HDSP_STATUS_OK;
 }
 
+hdsp_status_t hdsp_downsample_int16(int16_t *x, size_t x_len, int downsample_factor, int16_t *y, size_t y_len)
+{
+    if (!x || x_len < 1 || downsample_factor < 1 || !y || y_len < 1) {
+        return HDSP_STATUS_FALSE;
+    }
+
+    if (x_len / downsample_factor != y_len) {
+        return HDSP_STATUS_FALSE;
+    }
+
+    if (downsample_factor == 1) {
+        memcpy(y, x, x_len * sizeof(int16_t));
+        return HDSP_STATUS_OK;
+    }
+
+    size_t i = 0;
+    size_t j = 0;
+    while (i < x_len)
+    {
+        y[j] = x[i];
+        j = j + 1;
+        i = i + downsample_factor;
+    }
+
+    return HDSP_STATUS_OK;
+}
+
+hdsp_status_t hdsp_downsample_double(double *x, size_t x_len, int downsample_factor, double *y, size_t y_len)
+{
+    if (!x || x_len < 1 || downsample_factor < 1 || !y || y_len < 1) {
+        return HDSP_STATUS_FALSE;
+    }
+
+    if (x_len / downsample_factor != y_len) {
+        return HDSP_STATUS_FALSE;
+    }
+
+    if (downsample_factor == 1) {
+        memcpy(y, x, x_len * sizeof(int16_t));
+        return HDSP_STATUS_OK;
+    }
+
+    size_t i = 0;
+    size_t j = 0;
+    while (i < x_len)
+    {
+        y[j] = x[i];
+        j = j + 1;
+        i = i + downsample_factor;
+    }
+
+    return HDSP_STATUS_OK;
+}
+
 #define DEBUG 0
 uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, double *h, uint16_t h_len, double *y)
 {
@@ -84,9 +138,6 @@ uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, double *h, uint16_t h_len, d
     while (t < c_len) {
 
         y[t] = 0.0;
-
-        // When x_len > h_len
-
         tau_min = (t < h_len - 1) ? 0 : (t - (h_len - 1));
         tau_max = (t < h_len - 1) ? hdsp_min(x_len - 1, t) : t;
 
