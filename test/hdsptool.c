@@ -32,6 +32,21 @@
  * Piotr Gregor <piotr@dataandsignal.com>
  * Data And Signal - IT Solutions
  *
+ * hdsptool.c - Tool for testing some of the libhdsp features
+ *
+ * Command 'upsample' will test upsampling, filtering, downsampling of input file.
+ * Syntax is:
+ *      ./hdsptool upsample <input file raw> <input file sample rate>
+ * Input file needs to be in raw PCM 16 bit format and sampling rate must be 8 or 16 kHz.
+ * Target output sampling rate is 48 kHz.
+ * 4 files will be created to test the process:
+ *      x.raw - copy of the input, 16 bit PCM, 8 or 16 kHz (as the input)
+ *      x_upsampled.raw - x.raw after upsampling to 48 kHz, 16 bit PCM
+ *      x_upsampled_filtered.raw - x_upsampled.raw after zero-phase filtering with minimum length Kaiser filter
+ *          of passband frequency equal to half of the input file sampling rate (4 or 8 kHz), filter fixes
+ *          frequency aliasing effect that is a result of upsampling
+ *      x_upsampled_filtered_downsampled.raw - x_upsampled_filtered.raw downsampled to original sampling rate
+ *      (8 or 16 kHz)
  */
 
 
@@ -44,7 +59,7 @@ static void usage(const char *name) {
     if (name == NULL)
         return;
 
-    fprintf(stderr, "\nusage:\t %s upsample <input file raw> <input file sample rate> <output file upsampled raw>\n\n", name);
+    fprintf(stderr, "\nusage:\t %s upsample <input file raw> <input file sample rate>\n\n", name);
 }
 
 int main(int argc, char **argv) {
@@ -63,7 +78,7 @@ int main(int argc, char **argv) {
     hdsp_filter_t filter = {0};
     int upsample_factor = 0;
 
-    if (argc != 5) {
+    if (argc != 4) {
         usage(PROGRAM_NAME);
         exit(EXIT_FAILURE);
     }
@@ -75,7 +90,6 @@ int main(int argc, char **argv) {
     }
 
     f_in_name = argv[2];
-    f_out_name = argv[4];
     sample_rate_in = atoi(argv[3]);
     upsample_factor = TARGET_SAMPLE_RATE / sample_rate_in;
 
@@ -85,13 +99,13 @@ int main(int argc, char **argv) {
     f_out_x_upsampled_filtered = fopen("x_upsampled_filtered.raw", "wb");
     f_out_x_upsampled_filtered_downsampled = fopen("x_upsampled_filtered_downsampled.raw", "wb");
 
-    if (!f_in || !f_out_x || !f_out_x_upsampled || !f_out_x_upsampled_filtered || !f_out_x_upsampled_filtered_downsampled) {
-        fprintf(stderr, "Cannot open files\n");
+    if (sample_rate_in != 8000 && sample_rate_in != 16000) {
+        fprintf(stderr, "Only 8000 and 16000 sampling rate is supported\n");
         goto fail;
     }
 
-    if (sample_rate_in != 8000 && sample_rate_in != 16000) {
-        fprintf(stderr, "Only 8000 and 16000 sampling rate is supported\n");
+    if (!f_in || !f_out_x || !f_out_x_upsampled || !f_out_x_upsampled_filtered || !f_out_x_upsampled_filtered_downsampled) {
+        fprintf(stderr, "Cannot open files\n");
         goto fail;
     }
 
