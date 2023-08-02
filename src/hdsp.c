@@ -124,6 +124,15 @@ hdsp_status_t hdsp_downsample_double(double *x, size_t x_len, int downsample_fac
     return HDSP_STATUS_OK;
 }
 
+void hdsp_double_2_int16(double *x, size_t x_len, int16_t *y)
+{
+    size_t k = 0;
+    while (k < x_len) {
+        y[k] = (int16_t) x[k];
+        k = k + 1;
+    }
+}
+
 #define DEBUG 0
 uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, double *h, uint16_t h_len, double *y)
 {

@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
         i = i + 1;
     }
 
-    hdsp_test(HDSP_STATUS_OK == hdsp_upsample(x, X_LEN_SAMPLES, UPSAMPLE_FACTOR, y, Y_LEN_SAMPLES), "It did not work\n");
+    hdsp_test(HDSP_STATUS_OK == hdsp_upsample_int16(x, X_LEN_SAMPLES, UPSAMPLE_FACTOR, y, Y_LEN_SAMPLES), "It did not work\n");
 
     i = 0;
     while (i < X_LEN_SAMPLES)
