@@ -151,6 +151,15 @@ hdsp_status_t hdsp_downsample_float(float *x, size_t x_len, int downsample_facto
     return HDSP_STATUS_OK;
 }
 
+void hdsp_int16_2_float(int16_t *x, size_t x_len, float *y)
+{
+    size_t k = 0;
+    while (k < x_len) {
+        y[k] = (float) x[k];
+        k = k + 1;
+    }
+}
+
 void hdsp_double_2_int16(double *x, size_t x_len, int16_t *y)
 {
     size_t k = 0;

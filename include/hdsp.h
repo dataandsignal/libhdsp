@@ -124,6 +124,7 @@ hdsp_status_t hdsp_downsample_float(float *x, size_t x_len, int downsample_facto
 /**
  * Cast buffer of x_len samples, from type of x to type of y. Buffers must be of same number of elements.
  */
+void hdsp_int16_2_float(int16_t *x, size_t x_len, float *y);
 void hdsp_double_2_int16(double *x, size_t x_len, int16_t *y);
 void hdsp_double_2_float(double *x, size_t x_len, float *y);
 void hdsp_float_2_int16(float *x, size_t x_len, int16_t *y);
