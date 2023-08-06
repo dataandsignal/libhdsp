@@ -108,7 +108,34 @@ hdsp_status_t hdsp_downsample_double(double *x, size_t x_len, int downsample_fac
     }
 
     if (downsample_factor == 1) {
-        memcpy(y, x, x_len * sizeof(int16_t));
+        memcpy(y, x, x_len * sizeof(double));
+        return HDSP_STATUS_OK;
+    }
+
+    size_t i = 0;
+    size_t j = 0;
+    while (i < x_len)
+    {
+        y[j] = x[i];
+        j = j + 1;
+        i = i + downsample_factor;
+    }
+
+    return HDSP_STATUS_OK;
+}
+
+hdsp_status_t hdsp_downsample_float(float *x, size_t x_len, int downsample_factor, float *y, size_t y_len)
+{
+    if (!x || x_len < 1 || downsample_factor < 1 || !y || y_len < 1) {
+        return HDSP_STATUS_FALSE;
+    }
+
+    if (x_len / downsample_factor != y_len) {
+        return HDSP_STATUS_FALSE;
+    }
+
+    if (downsample_factor == 1) {
+        memcpy(y, x, x_len * sizeof(float));
         return HDSP_STATUS_OK;
     }
 
@@ -125,6 +152,24 @@ hdsp_status_t hdsp_downsample_double(double *x, size_t x_len, int downsample_fac
 }
 
 void hdsp_double_2_int16(double *x, size_t x_len, int16_t *y)
+{
+    size_t k = 0;
+    while (k < x_len) {
+        y[k] = (int16_t) x[k];
+        k = k + 1;
+    }
+}
+
+void hdsp_double_2_float(double *x, size_t x_len, float *y)
+{
+    size_t k = 0;
+    while (k < x_len) {
+        y[k] = (float) x[k];
+        k = k + 1;
+    }
+}
+
+void hdsp_float_2_int16(float *x, size_t x_len, int16_t *y)
 {
     size_t k = 0;
     while (k < x_len) {

@@ -119,11 +119,14 @@ hdsp_status_t hdsp_upsample_int16(int16_t *x, size_t x_len, int upsample_factor,
  */
 hdsp_status_t hdsp_downsample_int16(int16_t *x, size_t x_len, int downsample_factor, int16_t *y, size_t y_len);
 hdsp_status_t hdsp_downsample_double(double *x, size_t x_len, int downsample_factor, double *y, size_t y_len);
+hdsp_status_t hdsp_downsample_float(float *x, size_t x_len, int downsample_factor, float *y, size_t y_len);
 
 /**
- * Cast buffer of x_len samples, from double to int16_t. x and y must be of same number of elements.
+ * Cast buffer of x_len samples, from type of x to type of y. Buffers must be of same number of elements.
  */
 void hdsp_double_2_int16(double *x, size_t x_len, int16_t *y);
+void hdsp_double_2_float(double *x, size_t x_len, float *y);
+void hdsp_float_2_int16(float *x, size_t x_len, int16_t *y);
 
 /**
  * Compute full-length convolution of input signal x and filter h: x*h=Sum{x[tau]h[t-tau]}.
