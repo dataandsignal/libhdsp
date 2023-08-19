@@ -11,7 +11,7 @@ automake --add-missing
 make					(for debug: make CFLAGS="-ggdb -O0")
 make test
 make test check			(for autotesting)
-sudo make install		(will install libmusic to /usr/local/lib)
+sudo make install		(will install lib to /usr/local/lib)
 sudo ldconfig
 
 Piotr Gregor, piotr@dataandsignal.com

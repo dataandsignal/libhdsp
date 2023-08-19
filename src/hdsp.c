@@ -316,7 +316,7 @@ void hdsp_design_kaiser_n_beta(uint16_t passband_freq, uint16_t fs_hz, double st
     double tw_percentage = -0.98 * HDSP_KAISER_FILTER_STEEPNES + 0.99;
     double tw = tw_percentage * (1.0 - passband_freq_normalized);
     double stopband_freq_normalized = passband_freq_normalized + tw;
-    double stopband_freq = stopband_freq_normalized * ((double)fs_hz / 2.0);
+    //double stopband_freq = stopband_freq_normalized * ((double)fs_hz / 2.0);
 
     double passband_freq_normalized_2pi = passband_freq_normalized / 2.0;
     double stopband_freq_normalized_2pi = stopband_freq_normalized / 2.0;
@@ -326,13 +326,17 @@ void hdsp_design_kaiser_n_beta(uint16_t passband_freq, uint16_t fs_hz, double st
     double D = (attenuation_db - 7.95) / (2.0 * M_PI * 2.285);   // 7.95 was in Kaiser's original paper
     double df = fabs(stopband_freq_normalized_2pi - passband_freq_normalized_2pi);
 
-    fprintf(stderr, "->passband_ripple_linear: %f\n", passband_ripple_linear);
-    fprintf(stderr, "->stopband_attenuation_linear: %f\n", stopband_attenuation_linear);
-    fprintf(stderr, "->attenuation_db: %f\n", attenuation_db);
+    if (DEBUG) {
+        fprintf(stderr, "->passband_ripple_linear: %f\n", passband_ripple_linear);
+        fprintf(stderr, "->stopband_attenuation_linear: %f\n", stopband_attenuation_linear);
+        fprintf(stderr, "->attenuation_db: %f\n", attenuation_db);
+    }
 
     if (n) {
-        fprintf(stderr, "->D: %f\n", D);
-        fprintf(stderr, "->df: %f\n", df);
+        if (DEBUG) {
+            fprintf(stderr, "->D: %f\n", D);
+            fprintf(stderr, "->df: %f\n", df);
+        }
         *n = ceil(D / df + 1);
     }
 
@@ -471,20 +475,17 @@ hdsp_status_t hdsp_fir_filter(int16_t *x, size_t x_len, hdsp_filter_t *filter, d
     double *y_tmp = NULL;
 
     if (!x || x_len == 0 || !filter || filter->b_len == 0 || !y || y_len < x_len) {
-        printf("E1\n");
         return HDSP_STATUS_FALSE;
     }
 
     y_tmp = malloc(sizeof(double)*(x_len + filter->b_len - 1));
     if (!y_tmp) {
-        printf("E2\n");
         goto fail;
     }
     memset(y_tmp, 0, sizeof(double)*(x_len + filter->b_len - 1));
 
     if (x_len + filter->b_len - 1 != hdsp_conv(x, x_len, filter->b, filter->b_len,
                                                HDSP_CONV_TYPE_SAME, y_tmp, &idx_start, &idx_end)) {
-        printf("E3\n");
         goto fail;
     }
 
