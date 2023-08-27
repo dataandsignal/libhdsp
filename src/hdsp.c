@@ -215,8 +215,8 @@ uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, double *h, uint16_t h_len, d
             double h_v = h[t-tau];
             y[t] += x_v * h_v;
             if (DEBUG) {
-                fprintf(stderr, "-> t=%u,tau_min=%u,tau_max=%u\ttau=%u: x[%u]=%d h[%u]=%f y[%u]=%f\n", t, tau_min,
-                        tau_max, tau, tau, x_v, t - tau, h_v, t, y[t]);
+                fprintf(stderr, "-> t=%u,tau_min=%u,tau_max=%u\ttau=%u: x[%u]=%d h[%u]=%f y[%u]=%f\n",
+                        t, tau_min, tau_max, tau, tau, x_v, t - tau, h_v, t, y[t]);
             }
         }
 
@@ -235,6 +235,7 @@ uint16_t hdsp_conv(int16_t *x, uint16_t x_len, double *h, uint16_t h_len, hdsp_c
     if (n != x_len + h_len - 1) {
         return n;
     }
+
     switch (type) {
         case HDSP_CONV_TYPE_SAME:
             *idx_start = floor(h_len/2);

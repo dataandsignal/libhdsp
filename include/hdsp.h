@@ -137,7 +137,7 @@ void hdsp_float_2_int16(float *x, size_t x_len, int16_t *y);
  *      h - (in) input filter
  *      h_len - (in) number of filter's coefficients
  *      y - (out) output, must point to a valid memory of at least sizeof(int16_t)*(x_len + h_len - 1) bytes
- * Returns the number of elements written to y (x_len + h_len - 1).
+ * Returns the number of elements written to y (x_len + h_len - 1 on success, 0 on error).
  */
 uint16_t hdsp_conv_full(int16_t *x, uint16_t x_len, double *h, uint16_t h_len, double *y);
 
