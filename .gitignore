@@ -2,6 +2,8 @@
 *.so
 *.la
 *.lo
+*.raw
+*.wav
 .deps/
 .libs/
 COPYING
