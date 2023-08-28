@@ -61,7 +61,10 @@ static void usage(const char *name) {
     if (name == NULL)
         return;
 
-    fprintf(stderr, "\nusage:\t %s upsample <input file raw> <input file sample rate> <ptime ms>\n\n", name);
+    fprintf(stderr, "\nusage:\n"
+                    "\t %s upsample <input file raw> <input file sample rate> <ptime ms>\n"
+                    "\t %s upsamplef <input file raw> <input file sample rate> <ptime ms> <filter len>\n\n",
+                    name, name);
 }
 
 int main(int argc, char **argv) {
@@ -71,6 +74,7 @@ int main(int argc, char **argv) {
     int sample_rate_in = 0;
     int ptime_ms = 0;
     int samples_in = 0;
+    int filter_len = 0;
     int samples_per_ptime_of_48khz_frame = 0;
     FILE *f_in = NULL;
     FILE *f_out_x = NULL, *f_out_x_upsampled = NULL,
@@ -87,29 +91,41 @@ int main(int argc, char **argv) {
     char fname_x_u_f[BUFLEN] = {0};
     char fname_x_u_f_d[BUFLEN] = {0};
 
-    if (argc != 5) {
+    if (argc < 5) {
         usage(PROGRAM_NAME);
         exit(EXIT_FAILURE);
     }
 
     cmd = argv[1];
-    if (strcmp(cmd, "upsample") != 0) {
+    if (strcmp(cmd, "upsample") != 0 && strcmp(cmd, "upsamplef") != 0) {
         usage(PROGRAM_NAME);
         exit(EXIT_FAILURE);
+    } else {
+        if (strcmp(cmd, "upsample") == 0 && argc != 5) {
+            usage(PROGRAM_NAME);
+            exit(EXIT_FAILURE);
+        }
+        if (strcmp(cmd, "upsamplef") == 0 && argc != 6) {
+            usage(PROGRAM_NAME);
+            exit(EXIT_FAILURE);
+        }
     }
 
     f_in_name = argv[2];
     sample_rate_in = atoi(argv[3]);
     ptime_ms = atoi(argv[4]);
+    if (argc > 5) {
+        filter_len = atoi(argv[5]);
+    }
 
     upsample_factor = TARGET_SAMPLE_RATE / sample_rate_in;
     samples_in = ptime_ms * sample_rate_in / 1000;
     samples_per_ptime_of_48khz_frame = samples_in * upsample_factor;
 
-    snprintf(fname_x, BUFLEN - 1, "%dms_x.raw", ptime_ms);
-    snprintf(fname_x_u, BUFLEN - 1, "%dms_x_u.raw", ptime_ms);
-    snprintf(fname_x_u_f, BUFLEN - 1, "%dms_x_u_f.raw", ptime_ms);
-    snprintf(fname_x_u_f_d, BUFLEN - 1, "%dms_x_u_f_d.raw", ptime_ms);
+    snprintf(fname_x, BUFLEN - 1, "%dms_%d_x.raw", ptime_ms, filter_len);
+    snprintf(fname_x_u, BUFLEN - 1, "%dms_%d_x_u.raw", ptime_ms, filter_len);
+    snprintf(fname_x_u_f, BUFLEN - 1, "%dms_%d_x_u_f.raw", ptime_ms, filter_len);
+    snprintf(fname_x_u_f_d, BUFLEN - 1, "%dms_%d_x_u_f_d.raw", ptime_ms, filter_len);
 
     f_in = fopen(f_in_name, "rb");
     f_out_x = fopen(fname_x, "wb");
@@ -127,12 +143,24 @@ int main(int argc, char **argv) {
         goto fail;
     }
 
-    if (HDSP_STATUS_OK != hdsp_fir_filter_init_lowpass_kaiser_opt(&filter, 48000, sample_rate_in / 2)) {
-        fprintf(stderr, "Failed to create filter\n");
-        goto fail;
+    if (strcmp(cmd, "upsample") == 0) {
+        if (HDSP_STATUS_OK != hdsp_fir_filter_init_lowpass_kaiser_opt(&filter, 48000, sample_rate_in / 2)) {
+            fprintf(stderr, "Failed to create filter\n");
+            goto fail;
+        }
+        printf("sampling rate=%d, frame ms=%d, frame samples=%d, upsampling factor=%d\n",
+               sample_rate_in, ptime_ms, samples_in, upsample_factor);
     }
 
-    printf("sampling rate=%d, frame ms=%d, frame samples=%d, upsampling factor=%d\n", sample_rate_in, ptime_ms, samples_in, upsample_factor);
+    if (strcmp(cmd, "upsamplef") == 0) {
+        if (HDSP_STATUS_OK != hdsp_fir_filter_init_lowpass(&filter, filter_len, TARGET_SAMPLE_RATE, 0.95 * sample_rate_in / 2,
+                                                           HDSP_FILTER_DESIGN_METHOD_SPECTRUM_SAMPLING)) {
+            fprintf(stderr, "Failed to create filter\n");
+            goto fail;
+        }
+        printf("sampling rate=%d, frame ms=%d, frame samples=%d, upsampling factor=%d, filter len=%d\n",
+               sample_rate_in, ptime_ms, samples_in, upsample_factor, filter_len);
+    }
 
     while (samples_in == (n = fread(frame_in, sizeof(int16_t), samples_in, f_in))) {
         int m = 0;
