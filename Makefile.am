@@ -11,7 +11,7 @@ LIBS += -lm
 
 bin_PROGRAMS = hdsptool
 hdsptool_SOURCES = test/hdsptool.c
-hdsptool_LDADD = libhdsp.la
+hdsptool_LDADD = libhdsp.la -lrnnoise
 
 check_PROGRAMS = test1 test2 test3 test4 test5 test6 test7 test8
 TESTS = $(check_PROGRAMS)

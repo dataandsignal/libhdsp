@@ -51,20 +51,27 @@
 
 
 #include "hdsp.h"
+#include <rnnoise.h>
 
 #define PROGRAM_NAME argv[0]
 #define TARGET_SAMPLE_RATE 48000
 #define SAMPLES_PER_10MS_FRAME_OF_48000HZ 480
 #define BUFLEN 2000
 
+DenoiseState *rnnoise;
+
 static void usage(const char *name) {
     if (name == NULL)
         return;
 
     fprintf(stderr, "\nusage:\n"
-                    "\t %s upsample <input file raw> <input file sample rate> <ptime ms>\n"
-                    "\t %s upsamplef <input file raw> <input file sample rate> <ptime ms> <filter len>\n\n",
-                    name, name);
+                    "\t %s <cmd>\n"
+                    "<cmd>:\n"
+                    "\tupsample <input file raw> <input file sample rate> <ptime ms>\n"
+                    "\tupsamplef <input file raw> <input file sample rate> <ptime ms> <filter len>\n"
+                    "\tdenoise <input file raw> <input file sample rate> <ptime ms>\n"
+                    "\tdenoisef <input file raw> <input file sample rate> <ptime ms> <filter len>\n\n",
+                    name);
 }
 
 int main(int argc, char **argv) {
@@ -78,18 +85,22 @@ int main(int argc, char **argv) {
     int samples_per_ptime_of_48khz_frame = 0;
     FILE *f_in = NULL;
     FILE *f_out_x = NULL, *f_out_x_upsampled = NULL,
-        *f_out_x_upsampled_filtered = NULL, *f_out_x_upsampled_filtered_downsampled = NULL;
+        *f_out_x_upsampled_filtered = NULL, *f_out_x_upsampled_filtered_denoised = NULL, *f_out_x_upsampled_filtered_downsampled = NULL;
     size_t n = 0, n_total = 0;
     int16_t frame_in[TARGET_SAMPLE_RATE] = {0};
     double frame_out[TARGET_SAMPLE_RATE] = {0};
     double frame_out_downsampled[TARGET_SAMPLE_RATE] = {0};
+    float rnnoise_in[TARGET_SAMPLE_RATE] = {0};
+    float rnnoise_out[TARGET_SAMPLE_RATE] = {0};
     int k = 0;
     hdsp_filter_t filter = {0};
     int upsample_factor = 0;
     char fname_x[BUFLEN] = {0};
     char fname_x_u[BUFLEN] = {0};
     char fname_x_u_f[BUFLEN] = {0};
-    char fname_x_u_f_d[BUFLEN] = {0};
+    char fname_x_u_f_den[BUFLEN] = {0};
+    char fname_x_u_f_dwns[BUFLEN] = {0};
+    int denoising = 0;
 
     if (argc < 5) {
         usage(PROGRAM_NAME);
@@ -97,18 +108,22 @@ int main(int argc, char **argv) {
     }
 
     cmd = argv[1];
-    if (strcmp(cmd, "upsample") != 0 && strcmp(cmd, "upsamplef") != 0) {
+    if (strcmp(cmd, "upsample") != 0 && strcmp(cmd, "upsamplef") != 0 &&
+            strcmp(cmd, "denoise") != 0 && strcmp(cmd, "denoisef") != 0) {
         usage(PROGRAM_NAME);
         exit(EXIT_FAILURE);
     } else {
-        if (strcmp(cmd, "upsample") == 0 && argc != 5) {
+        if ((strcmp(cmd, "upsample") == 0 || strcmp(cmd, "denoise") == 0) && argc != 5) {
             usage(PROGRAM_NAME);
             exit(EXIT_FAILURE);
         }
-        if (strcmp(cmd, "upsamplef") == 0 && argc != 6) {
+        if ((strcmp(cmd, "upsamplef") == 0  || strcmp(cmd, "denoisef") == 0) && argc != 6) {
             usage(PROGRAM_NAME);
             exit(EXIT_FAILURE);
         }
+    }
+    if (strcmp(cmd, "denoise") == 0 || strcmp(cmd, "denoisef") == 0) {
+        denoising = 1;
     }
 
     f_in_name = argv[2];
@@ -125,13 +140,17 @@ int main(int argc, char **argv) {
     snprintf(fname_x, BUFLEN - 1, "%dms_%d_x.raw", ptime_ms, filter_len);
     snprintf(fname_x_u, BUFLEN - 1, "%dms_%d_x_u.raw", ptime_ms, filter_len);
     snprintf(fname_x_u_f, BUFLEN - 1, "%dms_%d_x_u_f.raw", ptime_ms, filter_len);
-    snprintf(fname_x_u_f_d, BUFLEN - 1, "%dms_%d_x_u_f_d.raw", ptime_ms, filter_len);
+    snprintf(fname_x_u_f_den, BUFLEN - 1, "%dms_%d_x_u_f_den.raw", ptime_ms, filter_len);
+    snprintf(fname_x_u_f_dwns, BUFLEN - 1, "%dms_%d_x_u_f_dwns.raw", ptime_ms, filter_len);
 
     f_in = fopen(f_in_name, "rb");
     f_out_x = fopen(fname_x, "wb");
     f_out_x_upsampled = fopen(fname_x_u, "wb");
     f_out_x_upsampled_filtered = fopen(fname_x_u_f, "wb");
-    f_out_x_upsampled_filtered_downsampled = fopen(fname_x_u_f_d, "wb");
+    if (denoising) {
+        f_out_x_upsampled_filtered_denoised = fopen(fname_x_u_f_den, "wb");
+    }
+    f_out_x_upsampled_filtered_downsampled = fopen(fname_x_u_f_dwns, "wb");
 
     if (sample_rate_in != 8000 && sample_rate_in != 16000) {
         fprintf(stderr, "Only 8000 and 16000 sampling rate is supported\n");
@@ -143,7 +162,7 @@ int main(int argc, char **argv) {
         goto fail;
     }
 
-    if (strcmp(cmd, "upsample") == 0) {
+    if (strcmp(cmd, "upsample") == 0  || strcmp(cmd, "denoise") == 0) {
         if (HDSP_STATUS_OK != hdsp_fir_filter_init_lowpass_kaiser_opt(&filter, 48000, sample_rate_in / 2)) {
             fprintf(stderr, "Failed to create filter\n");
             goto fail;
@@ -152,7 +171,7 @@ int main(int argc, char **argv) {
                sample_rate_in, ptime_ms, samples_in, upsample_factor);
     }
 
-    if (strcmp(cmd, "upsamplef") == 0) {
+    if (strcmp(cmd, "upsamplef") == 0  || strcmp(cmd, "denoisef") == 0) {
         if (HDSP_STATUS_OK != hdsp_fir_filter_init_lowpass(&filter, filter_len, TARGET_SAMPLE_RATE, 0.95 * sample_rate_in / 2,
                                                            HDSP_FILTER_DESIGN_METHOD_SPECTRUM_SAMPLING)) {
             fprintf(stderr, "Failed to create filter\n");
@@ -162,9 +181,21 @@ int main(int argc, char **argv) {
                sample_rate_in, ptime_ms, samples_in, upsample_factor, filter_len);
     }
 
+    if (denoising) {
+        rnnoise = rnnoise_create(NULL);
+        if (!rnnoise) {
+            fprintf(stderr, "Failed to create RNNoise\n");
+            goto fail;
+        }
+    }
+
     while (samples_in == (n = fread(frame_in, sizeof(int16_t), samples_in, f_in))) {
         int m = 0;
         int16_t buffer[TARGET_SAMPLE_RATE] = {0};
+        memset(rnnoise_in, 0, sizeof(rnnoise_in));
+        memset(rnnoise_out, 0, sizeof(rnnoise_out));
+        memset(frame_out, 0, sizeof(frame_out));
+        memset(frame_out_downsampled, 0, sizeof(frame_out_downsampled));
 
         k = k + 1;
         n_total = n_total + n;
@@ -204,6 +235,18 @@ int main(int argc, char **argv) {
             goto fail;
         }
 
+        if (denoising) {
+            hdsp_double_2_float(frame_out, samples_per_ptime_of_48khz_frame, rnnoise_in);
+            rnnoise_process_frame(rnnoise, rnnoise_out, rnnoise_in);
+            hdsp_float_2_int16(rnnoise_out, samples_per_ptime_of_48khz_frame, buffer);
+
+            // write upsampled, filtered, denoised
+            if (samples_per_ptime_of_48khz_frame < fwrite(buffer, sizeof(int16_t), samples_per_ptime_of_48khz_frame, f_out_x_upsampled_filtered_denoised)) {
+                fprintf(stderr, "Failed to write\n");
+                goto fail;
+            }
+        }
+
         if (HDSP_STATUS_OK != hdsp_downsample_double(frame_out, samples_per_ptime_of_48khz_frame, upsample_factor, frame_out_downsampled, samples_in)) {
             fprintf(stderr, "Failed to downsample\n");
             goto fail;
@@ -224,6 +267,27 @@ int main(int argc, char **argv) {
         // printf("Frame %d (bytes total: %zu)\n", k, n_total * sizeof(int16_t));
     }
 
+    if (f_in) {
+        fclose(f_in);
+    }
+    if (f_out_x) {
+        fclose(f_out_x);
+    }
+    if (f_out_x_upsampled) {
+        fclose(f_out_x_upsampled);
+    }
+    if (f_out_x_upsampled_filtered) {
+        fclose(f_out_x_upsampled_filtered);
+    }
+    if (f_out_x_upsampled_filtered_denoised) {
+        fclose(f_out_x_upsampled_filtered_denoised);
+    }
+    if (f_out_x_upsampled_filtered_downsampled) {
+        fclose(f_out_x_upsampled_filtered_downsampled);
+    }
+    if (rnnoise) {
+        rnnoise_destroy(rnnoise);
+    }
     printf("Done. (frames: %d, bytes total: %zu)\n", k, n_total * sizeof(int16_t));
     return 0;
 
@@ -240,8 +304,14 @@ fail:
     if (f_out_x_upsampled_filtered) {
         fclose(f_out_x_upsampled_filtered);
     }
+    if (f_out_x_upsampled_filtered_denoised) {
+        fclose(f_out_x_upsampled_filtered_denoised);
+    }
     if (f_out_x_upsampled_filtered_downsampled) {
         fclose(f_out_x_upsampled_filtered_downsampled);
+    }
+    if (rnnoise) {
+        rnnoise_destroy(rnnoise);
     }
     exit(EXIT_FAILURE);
 }
