@@ -1,18 +1,19 @@
 libhdsp - Handy DSP routines
 
-INSTALL
+# BUILD, INSTALL
 
-sudo apt-get update
-sudo apt-get -y install automake autoconf
-autoreconf --install
-autoconf
-automake --add-missing
+./autogen.sh
 ./configure
-make					(for debug: make CFLAGS="-ggdb -O0")
+make
+sudo make install
+
+for debug:
+    make CFLAGS="-ggdb -O0")
+
+# TEST
+
 make test
-make test check			(for autotesting)
-sudo make install		(will install lib to /usr/local/lib)
-sudo ldconfig
+make test check
 
 Piotr Gregor, piotr@dataandsignal.com
 Roche, St Austell, UK
