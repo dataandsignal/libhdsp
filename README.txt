@@ -12,8 +12,7 @@ for debug:
 
 # TEST
 
-make test
-make test check
+make check
 
 Piotr Gregor, piotr@dataandsignal.com
 Roche, St Austell, UK
