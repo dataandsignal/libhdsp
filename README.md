@@ -1,19 +1,25 @@
-libhdsp - Handy DSP routines
+# libhdsp - Handy DSP routines
 
-# BUILD, INSTALL
+### BUILD, INSTALL
 
+```
 ./autogen.sh
 ./configure
 make
 sudo make install
+```
 
 for debug:
-    make CFLAGS="-ggdb -O0")
+    `make CFLAGS="-ggdb -O0")`
 
-# TEST
+### TEST
 
+```
 make check
+```
 
 Piotr Gregor, piotr@dataandsignal.com
+
 Roche, St Austell, UK
+
 July 2023
