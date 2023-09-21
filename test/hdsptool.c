@@ -48,7 +48,8 @@
  *      PTms_x_u_f_d.raw - upsampled, filtered and downsampled to original sampling rate (8 or 16 kHz)
  * PTms_ will resolve to <ptime ms>ms_ where ptime is passed as a command parameter.
  *
- * Command 'upsamplef' is similar, but accepts any sampling rate and let's to define filter length.
+ * Command 'upsamplef' is similar, but accepts any sampling rate, uses filter designed by spectrum sampling
+ * and let's to specify filter length.
  * Commands 'denoise' and 'denoisef' work on the same principle, but additionally perform denoising with RNNoise.
  */
 
