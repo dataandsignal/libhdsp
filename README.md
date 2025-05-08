@@ -2,6 +2,13 @@
 
 ### BUILD, INSTALL
 
+1. Install dependencies:
+
+```
+rnnoise: https://github.com/xiph/rnnoise
+```
+
+2. Then
 ```
 ./autogen.sh
 ./configure
