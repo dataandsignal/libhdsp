@@ -1,6 +1,7 @@
 # libhdsp - Handy DSP routines
 
-### BUILD, INSTALL
+
+### BUILD
 
 1. Install dependencies:
 
@@ -18,6 +19,13 @@ sudo make install
 
 for debug:
     `make CFLAGS="-ggdb -O0")`
+
+
+### INSTALL
+```
+make install && ldconfig
+```
+
 
 ### TEST
 
